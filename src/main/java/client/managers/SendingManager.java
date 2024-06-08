@@ -5,7 +5,10 @@ import server.exeptions.InvalidInputException;
 import lib.utility.Message;
 import lib.managers.OutputManager;
 
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
 import java.net.InetSocketAddress;
+import java.net.SocketAddress;
 import java.nio.ByteBuffer;
 
 public class SendingManager {
@@ -13,44 +16,24 @@ public class SendingManager {
     private final UdpClient udpClient;
     private final JsonManager jsonManager;
     private final OutputManager outputManager;
+    private int port;
+    private SocketAddress host;
 
-    public SendingManager(UdpClient udpClient, JsonManager jsonManager, OutputManager outputManager) {
+
+    public SendingManager(UdpClient udpClient, JsonManager jsonManager, OutputManager outputManager, SocketAddress host) {
         this.udpClient = udpClient;
         this.jsonManager = jsonManager;
         this.outputManager = outputManager;
+        this.host = host;
     }
 
 
     public void sendMessage(Message message) throws InvalidInputException {
-        //var logger = LoggerManager.getLogger(SendingManager.class);
-        var t = 10;
-        for (; ; ) {
-            try {
-                while (!udpClient.isConnected()) {
-                    outputManager.println("Ожидайте подключения..");
-                    Thread.sleep(4000);
-                }
-                ByteBuffer buffer = ByteBuffer.wrap(jsonManager.gson.toJson(message).getBytes());
-                InetSocketAddress address = udpClient.getHost();
-                try {
-                    udpClient.getChannel().send(buffer, address);
-                } catch (Exception e) {
-                    if (t-- < 0) {
-                        outputManager.println("Ошибка отправки");
-                        t = 10;
-                        udpClient.newIP();
-                    }
-                }
-                    try {
-                        Thread.sleep(200);
-                        udpClient.getChannel().close();
-                        udpClient.connect();
-                    } catch (Exception ex) {
-                        outputManager.println("Ошибка подключения");
-                    }
-            } catch (InterruptedException e) {
-                outputManager.printerr("Слишком долгое ожидание");
-            }
+        ByteBuffer buffer = ByteBuffer.wrap(jsonManager.gson.toJson(message).getBytes());
+        try {
+            udpClient.getHost().send(new DatagramPacket(buffer.array(), buffer.array().length, host));
+        } catch (Exception e) {
+            outputManager.printerr("Ошибка отправки");
         }
     }
 }

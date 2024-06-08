@@ -10,7 +10,7 @@ import lib.utility.Runnable;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.IOException;
+import java.net.SocketException;
 import java.util.Scanner;
 
 /**класс для вызова команд*/
@@ -19,7 +19,8 @@ public class Runner implements Runnable {
     private InputManager inputManager;
     private SendingManager sendingManager;
     private UdpClient udpClient;
-    private CommandManager commandManager;
+    private final CommandManager commandManager;
+
     public Runner(OutputManager outputManager, CommandManager commandManager, InputManager inputManager, UdpClient udpClient, SendingManager sendingManager) {
         this.sendingManager = sendingManager;
         this.udpClient = udpClient;
@@ -28,9 +29,11 @@ public class Runner implements Runnable {
         this.commandManager = commandManager;
     }
 
-    /**метод для запуска интерактивного режима**/
+    /**
+     * метод для запуска интерактивного режима
+     **/
     @Override
-    public void letsGo() {
+    public void letsGo() throws SocketException {
         commandManager.addCommands();
         outputManager.print("Введите название команды или команду help для просмотра доступных команд\n");
         while (true) {
@@ -51,7 +54,7 @@ public class Runner implements Runnable {
                 switch (name) {
                     case "execute_script": {
                         String argument = command[1].trim();
-                        letsGoScript(argument, commandManager, inputManager, outputManager, new Scanner(new File(argument)));
+                        letsGoScript(inputManager, outputManager, new Scanner(new File(argument)));
                         break;
                     }
                     default: {
@@ -70,7 +73,6 @@ public class Runner implements Runnable {
                                 break;
                             }
                             Message message = new Message(name, argument);
-                            udpClient.connect();
                             sendingManager.sendMessage(message);
                             break;
                         }
@@ -84,16 +86,16 @@ public class Runner implements Runnable {
             } catch (NullPointerException e) {
                 outputManager.println("Давайте не будем так делать :( \n");
                 break;
-            } catch (IOException e) {
-                outputManager.println("Ошибка подключения");
             }
         }
     }
-   /**метод для запуска интерактивного режима в execute_script*/
-    @Override
-    public void letsGoScript(String arg, CommandManager comman, InputManager inputManager, OutputManager outputManager, Scanner scanner){
 
-        comman.addCommands();
+    /**
+     * метод для запуска интерактивного режима в execute_script
+     */
+    public void letsGoScript(InputManager inputManager, OutputManager outputManager, Scanner scanner) {
+
+        commandManager.addCommands();
         while (scanner.hasNextLine()) {
             try {
                 String input;
@@ -111,12 +113,14 @@ public class Runner implements Runnable {
                         command[1] = "";
                         Message message = new Message(commandName, command[1]);
                         sendingManager.sendMessage(message);
+                        break;
                     } else {
                         String argument = command[1].trim();
                         try {
                             Integer.parseInt(argument);
                             Message message = new Message(commandName, argument);
                             sendingManager.sendMessage(message);
+                            break;
                         } catch (NumberFormatException e) {
                             outputManager.println("Неправильный аргумент");
                         }
@@ -125,11 +129,10 @@ public class Runner implements Runnable {
                 if (commandName.equals("execute_script")) {
                     outputManager.println("Скрипт не может вызываться рекурсивно");
                 }
-                } catch (InvalidInputException e) {
+            } catch (InvalidInputException e) {
                 outputManager.printerr("Неверный ввод данных ");
             }
         }
     }
-
 }
 

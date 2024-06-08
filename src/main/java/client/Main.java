@@ -13,16 +13,15 @@ import java.util.Scanner;
 public class Main {
     public static void main(String[] args) throws IOException, InvalidInputException {
         Scanner scanner = new Scanner(System.in);
-        InetSocketAddress inetSocketAddress = new InetSocketAddress("localhost", 8080);
+        final int port = 9999;
         OutputManager outputManager = new OutputManager();
-        DatagramSocket datagramSocket = new DatagramSocket();
         InputManager inputManager = new InputManager(outputManager, scanner);
-        UdpClient udpClient = new UdpClient(inputManager, inetSocketAddress, outputManager);
+        UdpClient udpClient = new UdpClient(inputManager, port, outputManager);
         JsonManager jsonManager = new JsonManager(outputManager);
-        SendingManager sendingManager = new SendingManager(udpClient, jsonManager, outputManager);
+        SendingManager sendingManager = new SendingManager(udpClient, jsonManager, outputManager, new InetSocketAddress("127.0.0.1", port));
         CommandManager commandManager = new CommandManager();
         Runner runner = new Runner(outputManager, commandManager, inputManager, udpClient, sendingManager);
-        udpClient.newIP();
+        udpClient.connect();
         runner.letsGo();
     }
 }
