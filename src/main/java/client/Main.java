@@ -18,7 +18,7 @@ public class Main {
         InputManager inputManager = new InputManager(outputManager, scanner);
         UdpClient udpClient = new UdpClient(inputManager, port, outputManager);
         JsonManager jsonManager = new JsonManager(outputManager);
-        SendingManager sendingManager = new SendingManager(udpClient, jsonManager, outputManager, new InetSocketAddress("127.0.0.1", port));
+        SendingManager sendingManager = new SendingManager(udpClient, jsonManager, outputManager, new InetSocketAddress("127.0.0.1", 1235));
         CommandManager commandManager = new CommandManager();
         Runner runner = new Runner(outputManager, commandManager, inputManager, udpClient, sendingManager);
         udpClient.connect();

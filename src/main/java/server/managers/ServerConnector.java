@@ -31,7 +31,6 @@ public class ServerConnector {
     }
 
     public void connect() throws IOException {
-        for (; ; ) {
             if (channel != null) {
                 channel.close();
             }
@@ -42,7 +41,6 @@ public class ServerConnector {
                 channel.connect(host);
             } catch (UnknownHostException e) {
                 outputManager.printerr("Ошибка! Хост не найден!");
-            }
             }
         }
 }
