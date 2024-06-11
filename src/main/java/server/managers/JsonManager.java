@@ -16,18 +16,12 @@ import java.util.PriorityQueue;
 import com.google.gson.reflect    .TypeToken;
 import lib.managers.OutputManager;
 import lib.utility.Message;
-import server.utility.MessageSerializer;
+import lib.utility.MessageSerializer;
+import server.exeptions.InvalidInputException;
 
 
 /**менеджер для работы с файлом типа Json*/
 public class JsonManager {
-    private OutputManager outputManager;
-
-    private int currentId = 1;
-
-    public JsonManager(OutputManager outputManager) {
-        this.outputManager = outputManager;
-    }
 
     Gson gson = new GsonBuilder()
             .setPrettyPrinting()
@@ -42,12 +36,11 @@ public class JsonManager {
     /**
      * метод сериализации коллекции в формат json
      */
-    private String convertToJson(PriorityQueue<SpaceMarine> collection, OutputManager outputManager) {
+    private String convertToJson(PriorityQueue<SpaceMarine> collection) {
         try {
             String jsonElement = gson.toJson(collection);
             return jsonElement.toString();
         } catch (Exception e) {
-            outputManager.println("Ошибка сериализации");
             return null;
         }
     }
@@ -62,7 +55,7 @@ public class JsonManager {
     /*
      * @return - PriorityQueue<SpaceMarine> collection
      */
-    private PriorityQueue<SpaceMarine> convertToCollection(String s, OutputManager outputManager) {
+    private PriorityQueue<SpaceMarine> convertToCollection(String s) {
 
         Type collType = new TypeToken<PriorityQueue<SpaceMarine>>() {
         }.getType();
@@ -71,9 +64,8 @@ public class JsonManager {
 
         return result;
         } catch (Exception e) {
-            outputManager.println("Коллекция не валидна");
+            return null;
         }
-                return null;
     }
 
     /**
@@ -82,31 +74,28 @@ public class JsonManager {
 /*@args
         PriorityQueue<SpaceMarine> collection
      */
-    public void writeCollection(PriorityQueue<SpaceMarine> collection) {
+    public void writeCollection(PriorityQueue<SpaceMarine> collection) throws IOException {
         try {
-            var jsonElement = convertToJson(collection, outputManager);
+            var jsonElement = convertToJson(collection);
             if (jsonElement == null) return;
             Writer writer = new FileWriter(System.getenv("CAPIPA"));
             try {
                 writer.write(jsonElement);
                 writer.flush();
                 writer.close();
-                outputManager.println("Коллекция успешно сохранена в файл!");
-            } catch (FileNotFoundException | NullPointerException e) {
-                outputManager.println("Файл не найден ");
+            } catch (RuntimeException e) {
             }
         } catch (IOException e) {
-            outputManager.println("Ошибка записи в файл! ");
         }
     }
 
-    /**
+        /**
      * чтение коллекции из файла
      */
     /*
      * @return - коллекция
      */
-    public Collection<SpaceMarine> readCollection() {
+    public Collection<SpaceMarine> readCollection() throws IOException {
 
         String jsonPath = System.getenv("CAPIPA");
         if (jsonPath == null || jsonPath.isEmpty())
@@ -125,39 +114,18 @@ public class JsonManager {
             if (!jsonFile.canWrite()) {
                 System.out.println("Нет доступа к записи! Сохранение недоступно! ");
                 System.exit(1);
-
             }
-        } catch (IOException e) {
-            System.out.println("Ошибка. Неправильно указан путь в переменной окружения!");
-            return new PriorityQueue<SpaceMarine>();
-        }
-
-        StringBuilder builder = new StringBuilder();
-
-        try (BufferedReader buffer = new BufferedReader(
-                new FileReader(jsonPath))) {
-
-            String str;
-
-            // Condition check via buffer.readLine() method
-            // holding true upto that the while loop runs
-            while ((str = buffer.readLine()) != null) {
-                builder.append(str).append("\n");
-            }
-
-            PriorityQueue<SpaceMarine> sm = convertToCollection(builder.toString(), outputManager);
-            if (sm != null) {
-                outputManager.println("Коллекция успешно загружена!");
+            StringBuilder builder = new StringBuilder();
+            try (BufferedReader buffer = new BufferedReader(new FileReader(jsonPath))) {
+                String str;
+                while ((str = buffer.readLine()) != null) {
+                    builder.append(str).append("\n");
+                }
+                PriorityQueue<SpaceMarine> sm = convertToCollection(builder.toString());
                 return sm;
             }
-        } catch (FileNotFoundException exception) {
-            outputManager.println("Загрузочный файл не найден!");
-        } catch (IllegalStateException exception) {
-            outputManager.println("Непредвиденная ошибка!");
-            System.exit(0);
         } catch (IOException e) {
-            outputManager.println("Ошибка при чтении данных из файла ");
         }
-        return new PriorityQueue<>();
+        return null;
     }
-}
+    }

@@ -1,6 +1,8 @@
 package server.utility;
+import lib.utility.Message;
 import lib.utility.Runnable;
 import lib.managers.InputManager;
+import server.commands.Command;
 import server.exeptions.InvalidInputException;
 import server.managers.*;
 import lib.managers.OutputManager;
@@ -8,69 +10,42 @@ import server.managers.ServerReceivingManager;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.Scanner;
 
 /**класс для вызова команд*/
 public class Runner implements Runnable {
-    private OutputManager outputManager;
-    private InputManager inputManager;
-    private CommandManager comman;
+    private CommandManager commandManager;
     private ServerReceivingManager serverReceivingManager;
-    private final JsonManager jsonManager;
+    private final CollectionManager collectionManager;
+    private final ServerSendingManager serverSendingManager;
+    private final ServerConnector serverConnector;
 
-    public Runner(OutputManager outputManager, InputManager inputManager, CommandManager commandManager, ServerReceivingManager serverReceivingManager, JsonManager jsonManager) {
+
+    public Runner(CollectionManager collectionManager, CommandManager commandManager, ServerReceivingManager serverReceivingManager, ServerSendingManager serverSendingManager, ServerConnector serverConnector) {
         this.serverReceivingManager = serverReceivingManager;
-        this.outputManager = outputManager;
-        this.inputManager = inputManager;
-        this.comman = commandManager;
-        this.jsonManager = jsonManager;
+        this.commandManager = commandManager;
+        this.collectionManager = collectionManager;
+        this.serverConnector = serverConnector;
+        this.serverSendingManager = serverSendingManager;
     }
 
     /**
      * метод для запуска интерактивного режима
      **/
     @Override
-    public void letsGo() {
-        outputManager.print("Введите название команды или команду help для просмотра доступных команд\n");
+    public void letsGo() throws InvalidInputException, IOException {
         while (true) {
             try {
-                String[] input = ((serverReceivingManager.receive(jsonManager)).toString().trim()+" ").split(" ", 2);
-                String commandName = input[0];
-                switch (commandName) {
-                    case "execute_script": {
-                        String argument = input[1].trim();
-                        comman.execute(commandName, argument);
-                        break;
-                    }
-                    default: {
-                        if (input[1].isEmpty()) {
-                            input[1] = "";
-                            comman.execute(commandName, input[1]);
-                            break;
-                        } else {
-                            String argument = input[1].trim();
-                            ;
-                            try {
-                                Integer.parseInt(argument);
-                            } catch (NumberFormatException e) {
-                                outputManager.println("Неправильный аргумент");
-                                break;
-                            }
-                            comman.execute(commandName, argument);
-                            break;
-                        }
-                    }
-                }
-            } catch (FileNotFoundException e) {
-                outputManager.println("Файл скрипта не найден!");
-                break;
-            } catch (InvalidInputException e) {
-                outputManager.println("Неверный ввод данных ");
-            } catch (NullPointerException e) {
-                outputManager.println("Давайте не будем так делать :( \n");
-                break;
+                commandManager.addCommands();
+                serverConnector.connect();
+                Message clientMessage = serverReceivingManager.receive();
+                String commandName = clientMessage.getName();
+                Command command = commandManager.getCommandMap().get(commandName);
+                collectionManager.history(command.getName());
+                command.execute(clientMessage);
             } catch (IOException | InterruptedException e) {
-                throw new RuntimeException(e);
+                Message serverMessage = new Message("Error, ошибка выполнения сервером", "Код:1");
             }
         }
     }

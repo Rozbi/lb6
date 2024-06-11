@@ -9,6 +9,7 @@ import lib.spaceMarine.Chapter;
 import lib.spaceMarine.Coordinates;
 import lib.spaceMarine.SpaceMarine;
 import lib.utility.Message;
+import lib.utility.MessageSerializer;
 
 import java.lang.reflect.Type;
 import java.time.LocalDateTime;
@@ -33,6 +34,7 @@ public class JsonManager {
             .registerTypeAdapter(Coordinates.class, new CoordinatesAdapter())
             .registerTypeAdapter(Chapter.class, new ChapterAdapter())
             .registerTypeAdapter(SpaceMarine.class, new SpaceMarineDeserializer())
+            .registerTypeAdapter(Message.class, new MessageSerializer())
             .create();
 
     /**

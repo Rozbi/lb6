@@ -1,4 +1,4 @@
-package lib.utility;
+package client.utility;
 
 import server.exeptions.InvalidInputException;
 import server.managers.CollectionManager;
@@ -6,6 +6,9 @@ import lib.managers.InputManager;
 import lib.managers.OutputManager;
 import lib.spaceMarine.*;
 
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.NoSuchElementException;
 
 /**
@@ -29,7 +32,7 @@ public class Ask {
     private MeleeWeapon meleeWeapon; //Поле может быть null
     private Chapter chapter; //Поле может быть null*/
 
-    public SpaceMarine getSpaceMarine(OutputManager outputManager, CollectionManager collectionManager, InputManager inputManager) {
+    public String getSpaceMarineComponents() {
         while (true) {
             try {
                 outputManager.print("Введите имя: ");
@@ -42,7 +45,7 @@ public class Ask {
                     outputManager.println("Имя не может быть пустым или null! ");
                     outputManager.print("Введите имя: ");
                 }
-                Coordinates coordinates = getUzerCoordinates(outputManager);
+                List<String> coordinates = getUzerCoordinates(outputManager);
                 outputManager.print("Введите здоровье: ");
                 Long health;
                 while (true) {
@@ -75,8 +78,8 @@ public class Ask {
                 }
                 AstartesCategory astartesCategory = getUserAstartesCategory(outputManager);
                 MeleeWeapon meleeWeapon = getUserMeleeWeapon(outputManager);
-                Chapter chapter = getUserChapter(outputManager);
-                return new SpaceMarine(collectionManager.getCurrentId(), name, coordinates, health, heartCount, astartesCategory, meleeWeapon, chapter);
+                List<String> chapter = getUserChapter(outputManager);
+                return name + " " + coordinates.get(0) + " " + coordinates.get(1) + " " + health + " " + heartCount + " " + astartesCategory + " " + meleeWeapon + " " + ((chapter == null) ? null : chapter.get(0) + " " + chapter.get(1));
             } catch (NoSuchElementException | IllegalStateException e) {
                 outputManager.print("Ошибка чтения ");
             } catch (InvalidInputException e) {
@@ -85,7 +88,7 @@ public class Ask {
         }
     }
 
-    public Coordinates getUzerCoordinates(OutputManager outputManager) {
+    public List<String> getUzerCoordinates(OutputManager outputManager) {
         try {
             /*
             private Long x; //Значение поля должно быть больше -42, Поле не может быть null
@@ -121,16 +124,25 @@ public class Ask {
                         outputManager.print("Введите координату y: ");
                     }
                 } else {
-                    outputManager.println("Поле не может быть пустым или null! ");
+                    outputManager.println("Поле не может быть пустым или null!");
                     outputManager.print("Введите координату y: ");
                 }
             }
-            return new Coordinates(x, y);
+            if (new Coordinates(x, y).validate()) {
+                List<String> list = new ArrayList<String>();
+                list.add(String.valueOf(x));
+                list.add(String.valueOf(y));
+                return list;
+            } else {
+                outputManager.println("Координаты за пределом допустимого значения ");
+                return null;
+            }
         } catch (InvalidInputException ex) {
             outputManager.println("Неправильный ввод данных ");
             return null;
         }
     }
+
 
  public MeleeWeapon getUserMeleeWeapon(OutputManager outputManager) {
         try {
@@ -188,7 +200,7 @@ public class Ask {
         return null;
     }
 
-    public Chapter getUserChapter(OutputManager outputManager) throws InvalidInputException {
+    public List<String> getUserChapter(OutputManager outputManager) throws InvalidInputException {
         /*private String name; //Поле может быть null, Строка может быть пустой
         private String world; //Поле может быть null*/
         try {
@@ -201,10 +213,17 @@ public class Ask {
                 String y;
                 outputManager.print("Введите мир нынешней главы: ");
                 y = inputManager.read();
-                return new Chapter(x, y);
+                if (new Chapter(x, y).validate()) {
+                    List<String> list = new ArrayList<String>();
+                    list.add(x);
+                    list.add(y);
+                    return list;
+                } else {
+                    outputManager.println("Глава не валидна. ");
+                }
             }
         } catch (InvalidInputException e) {
-            outputManager.print("Ошибка чтения данных");
+            outputManager.println("Неправильный ввод данных ");
         }
         return null;
     }

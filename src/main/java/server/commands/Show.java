@@ -1,20 +1,22 @@
 package server.commands;
 
 import lib.managers.OutputManager;
+import lib.utility.Message;
 import server.managers.CollectionManager;
+import server.managers.ServerSendingManager;
 
 public class Show extends Command {
-    private OutputManager outputManager;
     private CollectionManager collectionManager;
     private static String name;
     private static String description;
+    private ServerSendingManager sendingManager;
 
-    public Show(String name, String description, CollectionManager collectionManager, OutputManager outputManager) {
+    public Show(String name, String description, CollectionManager collectionManager, ServerSendingManager sendingManager) {
         super("show", "вывести в стандартный поток вывода все элементы коллекции в строковом представлении");
         this.name = name;
         this.description = description;
         this.collectionManager = collectionManager;
-        this.outputManager = outputManager;
+        this.sendingManager = sendingManager;
     }
 
     @Override
@@ -28,13 +30,12 @@ public class Show extends Command {
     }
 
     @Override
-    public boolean execute(String arg) {
-        if (!arg.isEmpty()) {
-            outputManager.print("Неправильное количество аргументов ");
+    public boolean execute(Message message) {
+        try {
+            sendingManager.sendMessage(new Message(message.getName(), collectionManager.getCollection().toString(), message.getAddress()));
+            return true;
+        } catch (Exception e) {
             return false;
-        } else {
-            outputManager.println(collectionManager.getCollection().toString());
         }
-        return false;
     }
 }

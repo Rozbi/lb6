@@ -1,23 +1,25 @@
 package server.commands;
 
+import lib.utility.Message;
 import server.managers.CollectionManager;
 import lib.managers.OutputManager;
 import lib.spaceMarine.SpaceMarine;
+import server.managers.ServerSendingManager;
 
-import java.util.ArrayList;
-import java.util.Collections;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class PrintDescending extends Command {
     private static String name;
     private static String description;
-    private OutputManager outputManager;
     private CollectionManager collectionManager;
-    public PrintDescending(String name, String description, OutputManager outputManager, CollectionManager collectionManager) {
+    private ServerSendingManager sendingManager;
+    public PrintDescending(String name, String description, CollectionManager collectionManager, ServerSendingManager sendingManager) {
         super("print_descending", "вывести элементы коллекции в порядке убывания");
         this.name = name;
         this.description=description;
         this.collectionManager=collectionManager;
-        this.outputManager = outputManager;
+        this.sendingManager = sendingManager;
     }
     @Override
     public String getName(){
@@ -28,17 +30,15 @@ public class PrintDescending extends Command {
         return description;
     }
      @Override
-    public boolean execute(String arg){
-        if (!arg.isEmpty()){
-            outputManager.print("Неправильное количество аргументов ");
-            return false;
-        }
-         ArrayList<SpaceMarine> reverseCollection= new ArrayList<SpaceMarine>();
-        for (var spaceMarine : collectionManager.getCollection()){
-            reverseCollection.add(spaceMarine);
-            reverseCollection.sort(Collections.reverseOrder());
-        }
-        outputManager.println(String.valueOf(reverseCollection));
-        return true;
+    public boolean execute(Message message) {
+        List<SpaceMarine> sortedList = collectionManager.getCollection().stream()
+            .sorted(Comparator.reverseOrder())
+            .collect(Collectors.toList());
+         try {
+             sendingManager.sendMessage(new Message(message.getName(), sortedList.toString(), message.getAddress()));
+             return true;
+         } catch (Exception e) {
+             return false;
          }
+     }
     }

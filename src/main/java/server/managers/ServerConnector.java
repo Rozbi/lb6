@@ -2,32 +2,24 @@ package server.managers;
 
 import lib.managers.InputManager;
 import lib.managers.OutputManager;
+import lib.utility.Message;
 import server.exeptions.InvalidInputException;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
+import java.nio.channels.SelectionKey;
+import java.nio.channels.Selector;
 import java.nio.channels.DatagramChannel;
+import java.util.Iterator;
 
 public class ServerConnector {
     private DatagramChannel channel;
-    private InputManager inputManager;
-    private OutputManager outputManager;
     byte[] buffer;
     private InetSocketAddress host;
 
-    public ServerConnector(InputManager inputManager, InetSocketAddress host, OutputManager outputManager) throws IOException {
-        this.inputManager = inputManager;
+    public ServerConnector(InetSocketAddress host) throws IOException {
         this.host = host;
-        this.outputManager = outputManager;
-    }
-
-    public DatagramChannel getChannel() {
-        return channel;
-    }
-
-    public boolean isConnected() {
-        return channel.isConnected();
     }
 
     public void connect() throws IOException {
@@ -38,9 +30,16 @@ public class ServerConnector {
                 this.channel = DatagramChannel.open();
                 channel.bind(host);
                 channel.configureBlocking(false);
-                channel.connect(host);
             } catch (UnknownHostException e) {
-                outputManager.printerr("Ошибка! Хост не найден!");
             }
         }
+        public InetSocketAddress getHost() {
+            return this.host;
+        }
+        public DatagramChannel getChannel() {
+        return this.channel;
+    }
+    public boolean isConnected() {
+        return this.channel.isConnected();
+    }
 }

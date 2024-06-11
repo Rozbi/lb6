@@ -12,7 +12,6 @@ import java.net.SocketAddress;
 import java.nio.ByteBuffer;
 
 public class SendingManager {
-    private final int DATA_SIZE = 1024;
     private final UdpClient udpClient;
     private final JsonManager jsonManager;
     private final OutputManager outputManager;
@@ -31,7 +30,7 @@ public class SendingManager {
     public void sendMessage(Message message) throws InvalidInputException {
         ByteBuffer buffer = ByteBuffer.wrap(jsonManager.gson.toJson(message).getBytes());
         try {
-            udpClient.getHost().send(new DatagramPacket(buffer.array(), buffer.array().length, host));
+            udpClient.getSocket().send(new DatagramPacket(buffer.array(), buffer.array().length, host));
         } catch (Exception e) {
             outputManager.printerr("Ошибка отправки");
         }

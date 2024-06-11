@@ -1,20 +1,20 @@
 package server.commands;
 
+import lib.utility.Message;
 import server.managers.CollectionManager;
-import lib.managers.OutputManager;
+
+import java.io.IOException;
 
 public class Save extends Command {
     private static String name;
     private static String description;
     private CollectionManager collectionManager;
-    private OutputManager outputManager;
 
-    public Save(String name, String description, CollectionManager collectionManager, OutputManager outputManager) {
+    public Save(String name, String description, CollectionManager collectionManager) {
         super("save", "сохранить коллекцию в файл");
         this.name = name;
         this.description = description;
         this.collectionManager = collectionManager;
-        this.outputManager = outputManager;
     }
 
     @Override
@@ -28,12 +28,12 @@ public class Save extends Command {
     }
 
     @Override
-    public boolean execute(String arg){
-        if (!arg.isEmpty()) {
-            outputManager.println("Неправильное количество аргументов!");
+    public boolean execute(Message message) {
+        try {
+            collectionManager.save();
+            return true;
+        } catch (Exception e) {
             return false;
         }
-        collectionManager.save();
-        return true;
     }
 }

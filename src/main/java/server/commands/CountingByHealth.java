@@ -1,22 +1,28 @@
 package server.commands;
 
+
+import lib.spaceMarine.SpaceMarine;
+import lib.utility.Message;
 import server.managers.CollectionManager;
 import server.managers.JsonManager;
 import lib.managers.OutputManager;
+import server.managers.ServerSendingManager;
 
 import java.util.*;
+import java.util.stream.Collectors;
+
 
 public class CountingByHealth extends Command {
     private static String name;
     private static String description;
-    private OutputManager outputManager;
     private CollectionManager collectionManager;
+    private ServerSendingManager sendingManager;
     private JsonManager jsonManager;
-    public CountingByHealth(String name, String description, CollectionManager collectionManager, OutputManager outputManager) {
+    public CountingByHealth(String name, String description, CollectionManager collectionManager, ServerSendingManager sendingManager) {
         super("group_counting_by_health", "сгруппировать элементы коллекции по значению поля health, вывести количество элементов в каждой группе");this.name = name;
         this.description=description;
         this.collectionManager = collectionManager;
-        this.outputManager = outputManager;
+        this.sendingManager = sendingManager;
     }
     @Override
     public String getName(){
@@ -27,21 +33,17 @@ public class CountingByHealth extends Command {
         return description;
     }
      @Override
-    public boolean execute(String arg){
-        if (!arg.isEmpty()){
-            outputManager.print("Неправильное количество аргументов ");
-            return false;
-        } HashMap<Long, Integer> mapa= new HashMap<>();
-        outputManager.println("health: count");
-        for (var spaceMarine : collectionManager.getCollection()){
-            if (mapa.containsKey(spaceMarine.getHealth())){
-                mapa.put(spaceMarine.getHealth(), mapa.get(spaceMarine.getHealth())+1);
-            } else{
-                mapa.put(spaceMarine.getHealth(), 1);
-            }
-        } for (Long key:mapa.keySet()){
-            outputManager.println((key).toString()+": "+mapa.get(key).toString() + "\n");
+    public boolean execute(Message message) {
+         try {
+             Map<Long, Long> mapa = collectionManager.getCollection().stream()
+                     .collect(Collectors.groupingBy(SpaceMarine::getHealth, Collectors.counting()));
+
+             for (Long key : mapa.keySet()) {
+                 sendingManager.sendMessage(new Message(message.getName(), (key).toString() + ": " + mapa.get(key).toString(), message.getAddress()));
+             }
+             return true;
+         } catch (Exception e) {
+             return false;
          }
-        return true;
-    }
+     }
 }

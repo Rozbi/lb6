@@ -7,15 +7,12 @@ import java.util.Scanner;
 
 /**менеджер для чтения данных пользователя*/
 public class InputManager {
-    private Scanner scanner;
-    private OutputManager outputManager;
+    private static Scanner scanner;
     private boolean finish = false;
     private int flag;
 
-    public InputManager(OutputManager outputManager, Scanner scanner) throws FileNotFoundException {
-        this.outputManager = outputManager;
+    public InputManager(Scanner scanner) throws FileNotFoundException {
         this.scanner = scanner;
-
     }
 
     /**
@@ -27,5 +24,8 @@ public class InputManager {
             return input;
         }
         return null;
+    }
+    public static Scanner getScanner(){
+        return scanner;
     }
 }

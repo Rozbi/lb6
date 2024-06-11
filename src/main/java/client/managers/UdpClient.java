@@ -1,24 +1,25 @@
 package client.managers;
 
 import lib.managers.InputManager;
+import lib.utility.PortGetter;
 import server.exeptions.InvalidInputException;
 import lib.managers.OutputManager;
 
+import javax.sound.sampled.Port;
 import java.io.IOException;
 import java.net.*;
 import java.nio.channels.DatagramChannel;
 
 public class UdpClient {
     private DatagramSocket datagramSocket;
-    private DatagramPacket DatagramPacket;
     private InputManager inputManager;
     private OutputManager outputManager;
     byte[] buffer;
-    private final int port;
+    private final PortGetter portGetter;
 
-    public UdpClient(InputManager inputManager, int port, OutputManager outputManager) throws IOException {
+    public UdpClient(InputManager inputManager, PortGetter portGetter, OutputManager outputManager) throws IOException {
         this.inputManager = inputManager;
-        this.port = port;
+        this.portGetter = portGetter;
         this.outputManager = outputManager;
     }
 
@@ -32,13 +33,13 @@ public class UdpClient {
             datagramSocket.close();
         }
         try {
-            datagramSocket = new DatagramSocket(port);
+            datagramSocket = new DatagramSocket(portGetter.getClientPort());
         } catch (IOException e) {
             outputManager.printerr("Не удалось подключиться к хосту!");
         }
     }
-    public DatagramSocket getHost(){
-        return datagramSocket;
+    public DatagramSocket getSocket(){
+        return this.datagramSocket;
     }
 
     public InetSocketAddress newIP() throws InvalidInputException {
@@ -56,7 +57,7 @@ public class UdpClient {
             } else {
                 try {
                     datagramSocket.close();
-                    return new InetSocketAddress(adr, port);
+                    return new InetSocketAddress(adr, portGetter.getClientPort());
                 } catch (Exception e) {
                     outputManager.println("Неправильный ввод. Напишите новый хост (address:port):");
                 }

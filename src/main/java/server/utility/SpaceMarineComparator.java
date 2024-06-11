@@ -1,4 +1,4 @@
-package client.utility;
+package server.utility;
 
 import lib.spaceMarine.SpaceMarine;
 

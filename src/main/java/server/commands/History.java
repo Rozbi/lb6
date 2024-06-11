@@ -1,18 +1,20 @@
 package server.commands;
 
+import lib.utility.Message;
 import server.managers.CollectionManager;
 import lib.managers.OutputManager;
+import server.managers.ServerSendingManager;
 
 public class History extends Command {
     private static String name;
     private static String description;
-    private OutputManager outputManager;
     private CollectionManager collectionManager;
-    public History(String name, String description, CollectionManager collectionManager, OutputManager outputManager) {
+    private ServerSendingManager sendingManager;
+    public History(String name, String description, CollectionManager collectionManager, ServerSendingManager sendingManager) {
         super("history", "вывести последние 14 команд");this.name = name;
         this.description=description;
         this.collectionManager = collectionManager;
-        this.outputManager = outputManager;
+        this.sendingManager = sendingManager;
     }
     @Override
     public String getName(){
@@ -23,11 +25,13 @@ public class History extends Command {
         return description;
     }
      @Override
-    public boolean execute(String arg){
-        if (!arg.isEmpty()){
-            outputManager.print("Неправильное количество аргументов ");
+    public boolean execute(Message message){
+        try{
+            sendingManager.sendMessage(new Message("history", collectionManager.getHistory().toString(), message.getAddress()));
+            return true;
+        } catch (Exception e){
             return false;
-        } outputManager.println(collectionManager.getHistory().toString());
-        return true;
+        }
+
     }
 }

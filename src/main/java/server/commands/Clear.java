@@ -1,18 +1,20 @@
 package server.commands;
 
+import lib.utility.Message;
 import server.managers.CollectionManager;
 import lib.managers.OutputManager;
+import server.managers.ServerSendingManager;
 
 public class Clear extends Command {
     private static String name;
     private static String description;
-    private OutputManager outputManager;
     private CollectionManager collectionManager;
-    public Clear(String name, String description, OutputManager outputManager, CollectionManager collectionManager) {
+    private ServerSendingManager serverSendingManager;
+    public Clear(String name, String description, CollectionManager collectionManager, ServerSendingManager serverSendingManager) {
         super("clear", "очистить коллекцию");this.name = name;
         this.description=description;
         this.collectionManager = collectionManager;
-        this.outputManager = outputManager;
+        this.serverSendingManager = serverSendingManager;
     }
     @Override
     public String getName(){
@@ -23,12 +25,14 @@ public class Clear extends Command {
         return description;
     }
     @Override
-    public boolean execute(String arg){
-        if (!arg.isEmpty()){
-            outputManager.println("Неправильное количество аргументов ");
+    public boolean execute(Message message){
+        try{
+            collectionManager.clear();
+            serverSendingManager.sendMessage(new Message(message.getName(), "Коллекция очищена ", message.getAddress()));
+            return true;
+        } catch(Exception e){
             return false;
-        } collectionManager.clear();
-        outputManager.println("Коллекция очищена ");
-        return true;
+        }
+
     }
 }

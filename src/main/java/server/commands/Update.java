@@ -1,11 +1,12 @@
 package server.commands;
 
+import lib.spaceMarine.*;
+import lib.utility.Message;
 import server.managers.CollectionManager;
 import lib.managers.OutputManager;
 import lib.managers.InputManager;
-import lib.spaceMarine.SpaceMarine;
-import lib.utility.Ask;
-import client.utility.SpaceMarineComparator;
+import server.managers.ServerSendingManager;
+import server.utility.SpaceMarineComparator;
 import server.managers.ServerReceivingManager;
 
 import java.time.LocalDateTime;
@@ -13,21 +14,15 @@ import java.time.LocalDateTime;
 public class Update extends Command {
     private static String name;
     private static String description;
-    private OutputManager outputManager;
     private CollectionManager collectionManager;
-    private Ask ask;
-    private InputManager inputManager;
-    private ServerReceivingManager serverReceivingManager;
+    private ServerSendingManager serverSendingManager;
     private boolean k;
-    public Update(String name, String description, CollectionManager collectionManager, OutputManager outputManager, ServerReceivingManager serverReceivingManager, Ask ask) {
+    public Update(String name, String description, CollectionManager collectionManager, ServerSendingManager serverSendingManager) {
         super("update", "обновить значение элемента коллекции, id которого равен заданному");
         this.name = name;
-        this.serverReceivingManager = serverReceivingManager;
+        this.serverSendingManager = serverSendingManager;
         this.description=description;
         this.collectionManager = collectionManager;
-        this.outputManager = outputManager;
-        this.inputManager = inputManager;
-        this.ask = ask;
     }
     @Override
     public String getName(){
@@ -38,36 +33,59 @@ public class Update extends Command {
         return description;
     }
     @Override
-    public boolean execute(String arg) {
-        if (arg.isEmpty()) {
-            outputManager.println("Неправильное количество аргументов ");
-            outputManager.println("Использование: '" + getName() + "'");
+    public boolean execute(Message message) {
+        try {
+            String[] sm = message.getEntity().toString().split(" ");
+            SpaceMarineComparator comparator = new SpaceMarineComparator();
+            String[] components = message.getEntity().toString().split(" ");
+            try {
+                SpaceMarine element = new SpaceMarine(collectionManager.getCurrentId(), sm[0], new Coordinates(Long.parseLong(sm[1]), Float.parseFloat(sm[2])), LocalDateTime.now(), Long.parseLong(sm[3]), Integer.parseInt(sm[4]), sm[5].equals("null") ? null : AstartesCategory.valueOf(sm[5]), sm[6].equals("null") ? null : MeleeWeapon.valueOf(sm[6]), new Chapter(sm[7], sm[8]));
+                for (var spaceMarine : collectionManager.getCollection()) {
+                    if ((spaceMarine.getId()) == Long.parseLong(message.getEntity().toString())) {
+                        spaceMarine.setName(element.getName());
+                        spaceMarine.setCoordinates(element.getCoordinates());
+                        spaceMarine.setHealth(element.getHealth());
+                        spaceMarine.setHeartCount(element.getHeartCount());
+                        spaceMarine.setMeleeWeapon(element.getMeleeWeapon());
+                        spaceMarine.setChapter(element.getChapter());
+                        spaceMarine.setCreationDate(element.getCreationDate());
+                        spaceMarine.setCategory(element.getCategory());
+                        serverSendingManager.sendMessage(new Message("add", "Элемент обновлен", message.getAddress()));
+                        collectionManager.setLastInitTime(LocalDateTime.now());
+                        k = true;
+                        return true;
+                    }
+                }
+                if (!k) {
+                    serverSendingManager.sendMessage(new Message(message.getName(), "Нет элемента с таким id ", message.getAddress()));
+                }
+            } catch (IndexOutOfBoundsException e) {
+                Long idElement = Long.parseLong(sm[0]);
+                SpaceMarine element = new SpaceMarine(collectionManager.getCurrentId(), sm[1], new Coordinates(Long.parseLong(sm[2]), Float.parseFloat(sm[3])), LocalDateTime.now(), Long.parseLong(sm[4]), Integer.parseInt(sm[5]), sm[6].equals("null") ? null : AstartesCategory.valueOf(sm[6]), sm[7].equals("null") ? null : MeleeWeapon.valueOf(sm[7]), null);
+                for (var spaceMarine : collectionManager.getCollection()) {
+                    if ((spaceMarine.getId()) == element.getId()) {
+                        spaceMarine.setName(element.getName());
+                        spaceMarine.setCoordinates(element.getCoordinates());
+                        spaceMarine.setHealth(element.getHealth());
+                        spaceMarine.setHeartCount(element.getHeartCount());
+                        spaceMarine.setMeleeWeapon(element.getMeleeWeapon());
+                        spaceMarine.setChapter(element.getChapter());
+                        spaceMarine.setCreationDate(element.getCreationDate());
+                        spaceMarine.setCategory(element.getCategory());
+                        serverSendingManager.sendMessage(new Message(message.getName(), "Элемент обновлен", message.getAddress()));
+                        collectionManager.setLastInitTime(LocalDateTime.now());
+                        k = true;
+                        return true;
+                    }
+                }
+                if (!k) {
+                    serverSendingManager.sendMessage(new Message(message.getName(), "Нет элемента с таким id ", message.getAddress()));
+                    return false;
+                }
+            }
+        } catch (Exception e) {
             return false;
         }
-        SpaceMarineComparator comparator = new SpaceMarineComparator();
-        SpaceMarine element = ask.getSpaceMarine(outputManager, collectionManager, inputManager);
-        if (element != null && element.validate()) {
-            for (var spaceMarine : collectionManager.getCollection()) {
-                if ((spaceMarine.getId()) == Long.parseLong(arg)) {
-                    spaceMarine.setName(element.getName());
-                    spaceMarine.setCoordinates(element.getCoordinates());
-                    spaceMarine.setHealth(element.getHealth());
-                    spaceMarine.setHeartCount(element.getHeartCount());
-                    spaceMarine.setMeleeWeapon(element.getMeleeWeapon());
-                    spaceMarine.setChapter(element.getChapter());
-                    spaceMarine.setCreationDate(element.getCreationDate());
-                    spaceMarine.setCategory(element.getCategory());
-                    outputManager.println("Элемент обновлен.");
-                    collectionManager.setLastInitTime(LocalDateTime.now());
-                    k = true;
-                    return true;
-                }
-            } if (!k) {
-                outputManager.println("Нет элемента с таким id ");
-            }
-        } else {
-            outputManager.println("Поля не валидны. Элемент не добавлен в коллекцию. ");
-            return false;
-        }return false;
+        return false;
     }
 }

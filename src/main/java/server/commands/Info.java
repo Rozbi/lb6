@@ -1,18 +1,20 @@
 package server.commands;
 
+import lib.utility.Message;
 import server.managers.CollectionManager;
 import lib.managers.OutputManager;
+import server.managers.ServerSendingManager;
 
 public class Info extends Command {
-    private OutputManager outputManager;
     private CollectionManager collectionManager;
     private static String name;
     private static String description;
-    public Info(String name, String description, CollectionManager collectionManager, OutputManager outputManager) {
+    private ServerSendingManager sendingManager;
+    public Info(String name, String description, CollectionManager collectionManager, ServerSendingManager sendingManager) {
         super("info", "вывести в стандартный поток вывода информацию о коллекции");this.name = name;
         this.description=description;
         this.collectionManager = collectionManager;
-        this.outputManager = outputManager;
+        this.sendingManager = sendingManager;
     }
     @Override
     public String getName(){
@@ -24,15 +26,12 @@ public class Info extends Command {
     }
 
     @Override
-    public boolean execute(String arg){
-        if (!arg.isEmpty()) {
-            outputManager.println("Неправильное количество аргументов ");
-            return false;
-        }
-        outputManager.println("Тип коллекции: " + collectionManager.getCollection().getClass().toString() + "\n" +
-                "Количество элементов: " + collectionManager.getCollection().size() + "\n" +
-                "Время загрузки " + collectionManager.getLastInitTime() + "\n" +
-                "Время сохранения " + collectionManager.getLastSaveTime());
-    return true;
+    public boolean execute(Message message){
+        try{
+        sendingManager.sendMessage(new Message("info", collectionManager.getCollection().getClass().toString() + " " + collectionManager.getCollection().size() + collectionManager.getLastInitTime() + " " + collectionManager.getLastSaveTime(), message.getAddress()));
+        return true;
+    } catch (Exception e) {
+        return false;
+    }
     }
 }

@@ -3,13 +3,14 @@ package lib.spaceMarine;
 
 import lib.utility.Validatable;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Objects;
 /**основной класс лабораторной работы
  */
-public class SpaceMarine implements Validatable, Comparable<SpaceMarine>{
+public class SpaceMarine implements Validatable, Serializable,Comparable<SpaceMarine>{
     private long id; //Значение поля должно быть больше 0, Значение этого поля должно быть уникальным, Значение этого поля должно генерироваться автоматически
     private String name; //Поле не может быть null, Строка не может быть пустой
     private Coordinates coordinates; //Поле не может быть null
