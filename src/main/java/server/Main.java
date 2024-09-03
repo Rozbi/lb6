@@ -18,6 +18,8 @@ public class Main {
     public static void main(String[] args) throws IOException, InterruptedException, InvalidInputException {
         byte[] buffer = new byte[300];
         PortGetter portGetter = new PortGetter();
+        OutputManager outputManager = new OutputManager();
+        InputManager inputManager = new InputManager(new Scanner(System.in));
         InetSocketAddress inetSocketAddress = new InetSocketAddress("localhost", portGetter.getServerPort());
         ServerConnector serverConnector = new ServerConnector(inetSocketAddress);
         ServerSendingManager serverSendingManager = new ServerSendingManager(serverConnector);
@@ -32,7 +34,7 @@ public class Main {
         collectionManager.setCollection(priora);
         ServerReceivingManager serverReceivingManager = new ServerReceivingManager(serverConnector, serverSendingManager);
         CommandManager commandManager = new CommandManager(collectionManager, serverSendingManager);
-        Runner runner = new Runner(collectionManager, commandManager, serverReceivingManager, serverSendingManager, serverConnector);
+        Runner runner = new Runner(collectionManager, commandManager, serverReceivingManager, serverSendingManager, serverConnector, inputManager, outputManager);
         runner.letsGo();
     }
 

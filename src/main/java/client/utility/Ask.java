@@ -113,12 +113,20 @@ public class Ask {
             }
             outputManager.print("Введите координату y: ");
             float y;
+            List<String> list = new ArrayList<String>();
             while (true) {
                 var line = inputManager.read().trim();
                 if (!line.isEmpty()) {
                     try {
                         y = Float.parseFloat(line);
-                        break;
+                        if (new Coordinates(x, y).validate()) {
+                            list.add(String.valueOf(x));
+                            list.add(String.valueOf(y));
+                            break;
+                        } else {
+                            outputManager.println("Координаты за пределом допустимого значения ");
+                            outputManager.print("Введите координату y: ");
+                        }
                     } catch (NumberFormatException e) {
                         outputManager.println("Поле должно быть float ");
                         outputManager.print("Введите координату y: ");
@@ -128,15 +136,7 @@ public class Ask {
                     outputManager.print("Введите координату y: ");
                 }
             }
-            if (new Coordinates(x, y).validate()) {
-                List<String> list = new ArrayList<String>();
-                list.add(String.valueOf(x));
-                list.add(String.valueOf(y));
-                return list;
-            } else {
-                outputManager.println("Координаты за пределом допустимого значения ");
-                return null;
-            }
+            return list;
         } catch (InvalidInputException ex) {
             outputManager.println("Неправильный ввод данных ");
             return null;
@@ -220,6 +220,7 @@ public class Ask {
                     return list;
                 } else {
                     outputManager.println("Глава не валидна. ");
+                    return null;
                 }
             }
         } catch (InvalidInputException e) {

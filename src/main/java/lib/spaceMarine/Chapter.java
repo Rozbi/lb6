@@ -19,9 +19,10 @@ public Chapter(String s) {
     }
     @Override
     public boolean validate() {
-        if (name == null && name.isEmpty()) {
-            return false;
-        } return (world.isEmpty());
+        if (!name.isEmpty()) {
+            return (!world.isEmpty());
+        }
+        return true;
     }
 
     public String getName() {

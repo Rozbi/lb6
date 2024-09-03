@@ -37,7 +37,6 @@ public class CountingByHealth extends Command {
          try {
              Map<Long, Long> mapa = collectionManager.getCollection().stream()
                      .collect(Collectors.groupingBy(SpaceMarine::getHealth, Collectors.counting()));
-
              for (Long key : mapa.keySet()) {
                  sendingManager.sendMessage(new Message(message.getName(), (key).toString() + ": " + mapa.get(key).toString(), message.getAddress()));
              }

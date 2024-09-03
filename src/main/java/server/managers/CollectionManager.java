@@ -42,13 +42,11 @@ public class CollectionManager {
      * @return - commands
      */
     public boolean add(SpaceMarine sm) {
-        System.out.println("Добавление элемента в коллекцию...");
         if (sm != null || sm.validate()) {
             collection.add(sm);
             currentId += 1;
             return true;
         } else {
-            System.out.println("Неправильный элемент. Добавить в колекцию невозможно");
             return false;
         }
     }

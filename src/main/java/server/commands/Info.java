@@ -28,7 +28,7 @@ public class Info extends Command {
     @Override
     public boolean execute(Message message){
         try{
-        sendingManager.sendMessage(new Message("info", collectionManager.getCollection().getClass().toString() + " " + collectionManager.getCollection().size() + collectionManager.getLastInitTime() + " " + collectionManager.getLastSaveTime(), message.getAddress()));
+        sendingManager.sendMessage(new Message("info", collectionManager.getCollection().getClass().toString() + " " + collectionManager.getCollection().size() + " "+ collectionManager.getLastInitTime() + " " + collectionManager.getLastSaveTime(), message.getAddress()));
         return true;
     } catch (Exception e) {
         return false;

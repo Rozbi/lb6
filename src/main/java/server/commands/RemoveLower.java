@@ -2,6 +2,7 @@ package server.commands;
 
 import client.managers.SendingManager;
 import lib.utility.Message;
+import server.exeptions.InvalidInputException;
 import server.managers.CollectionManager;
 import lib.managers.InputManager;
 import lib.managers.OutputManager;
@@ -9,7 +10,10 @@ import lib.spaceMarine.SpaceMarine;
 import client.utility.Ask;
 import server.managers.ServerSendingManager;
 
+import java.io.IOException;
+import java.util.List;
 import java.util.PriorityQueue;
+import java.util.stream.Collectors;
 
 public class RemoveLower extends Command {
     private static String name;
@@ -40,23 +44,16 @@ public class RemoveLower extends Command {
     }
 
     @Override
-    public boolean execute(Message message) {
+    public boolean execute(Message message) throws InvalidInputException, IOException {
         try{
             if (collectionManager.getCollection().isEmpty()) {
                 sendingManager.sendMessage(new Message(message.getName(), "коллекция пуста!", message.getAddress()));
                 return false;
             } else {
-                PriorityQueue<SpaceMarine> queue = new PriorityQueue<>();
-
-                for (var spaceMarine : collectionManager.getCollection()) {
-                    if (Long.parseLong(message.getEntity().toString()) <= spaceMarine.getId()) {
-                        queue.add(spaceMarine);
-
-                    }
-                } if (queue.size() == collectionManager.getCollection().size()){
-                    sendingManager.sendMessage(new Message(message.getName(), "У всех элементов id больше заданного", message.getAddress()));
-                    return false;
-                }collectionManager.setCollection(queue);
+                PriorityQueue<SpaceMarine> queue = collectionManager.getCollection().stream()
+                        .filter(spaceMarine -> spaceMarine.getId()>Long.parseLong(message.getEntity().toString()))
+                        .collect(Collectors.toCollection(PriorityQueue::new));
+                collectionManager.setCollection(queue);
                 sendingManager.sendMessage(new Message(message.getName(), "Элементы удалены", message.getAddress()));
                 return true;
             }

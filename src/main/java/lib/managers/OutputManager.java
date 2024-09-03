@@ -30,7 +30,7 @@ public class OutputManager {
             }
             case "info": {
                 String[] info = message.getEntity().toString().split(" ");
-                System.out.println("Тип коллекции: " + info[0] + "\n" + "Количество элементов: " + info[1] + "\n" + "Время загрузки " + info[2] + "\n" + "Время сохранения " + info[3]);
+                System.out.println("Тип коллекции: " + info[1] + "\n" + "Количество элементов: " + info[2] + "\n" + "Время загрузки " + info[3] + "\n" + "Время сохранения " + info[4]);
                 break;
             }
             case "group_counting_by_health":{

@@ -5,7 +5,9 @@ import lib.utility.Message;
 
 import java.io.*;
 import java.net.DatagramPacket;
+import java.net.SocketTimeoutException;
 import java.nio.ByteBuffer;
+import java.util.concurrent.TimeUnit;
 
 public class ReceivingManager {
     private final UdpClient udpClient;
@@ -18,18 +20,25 @@ public class ReceivingManager {
         this.outputManager = outputManager;
     }
 
-    public Message receive() throws IOException {
+    public Message receive() throws IOException, SocketTimeoutException {
         byte[] buffer = new byte[4096];
         DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
-        udpClient.getSocket().receive(packet);
+        while (true) {
+            try {
+                TimeUnit.MILLISECONDS.sleep(100);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+            udpClient.getSocket().receive(packet);
+            break;
+        }
         ByteArrayInputStream n = new ByteArrayInputStream(packet.getData());
         ObjectInputStream o = new ObjectInputStream(n);
         try {
             Message message = (Message) o.readObject();
-            return  message;
+            return message;
         } catch (IOException | ClassNotFoundException e) {
             throw new RuntimeException("Deserialization error", e);
         }
     }
-
 }

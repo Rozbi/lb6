@@ -13,7 +13,9 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.SocketException;
+import java.net.SocketTimeoutException;
 import java.util.Scanner;
+import java.util.concurrent.TimeUnit;
 
 /**класс для вызова команд*/
 public class Runner implements Runnable {
@@ -42,7 +44,7 @@ public class Runner implements Runnable {
         outputManager.print("Введите название команды или команду help для просмотра доступных команд\n");
         while (true) {
             try {
-                String input = inputManager.read();
+                String input = inputManager.read().toLowerCase();
                 String[] command = (input.trim() + " ").split(" ", 2);
                 String name = command[0];
                 if (!commandManager.getCommandMap().containsKey(name)) {
@@ -57,12 +59,11 @@ public class Runner implements Runnable {
                     case "execute_script": {
                         String argument = command[1].trim();
                         letsGoScript(new InputManager(new Scanner(new File(argument))));
-                        break;
                     }
                     case "add", "add_if_min", "update" :{
                         Ask ask = new Ask(inputManager, outputManager);
                         String argument = ask.getSpaceMarineComponents();
-                        String idArgument = command[1].trim();
+                        String idArgument = command[1];
                         Message message = new Message(name, idArgument + argument);
                         sendingManager.sendMessage(message);
                         outputManager.prettyPrint(receivingManager.receive());
@@ -103,8 +104,8 @@ public class Runner implements Runnable {
             } catch (InvalidInputException e) {
                 outputManager.printerr("Неверный ввод данных ");
             } catch (NullPointerException e) {
-                outputManager.printerr("Давайте не будем так делать :(");
-                break;
+            } catch (SocketTimeoutException e) {
+                outputManager.print("Время ожидания вышло. Повторите попытку.");
             } catch (IOException e) {
                 outputManager.printerr("Ошибка выполнения");
             }
@@ -120,10 +121,10 @@ public class Runner implements Runnable {
         while (InputManager.getScanner().hasNextLine()) {
             try {
                 String input;
-                input = inputManager.read();
+                input = inputManager.read().toLowerCase();
                 String[] command = (input.trim() + " ").split(" ", 2);
                 String commandName = command[0];
-                if (commandManager.getCommandMap().containsKey(commandName)) {
+                if (!commandManager.getCommandMap().containsKey(commandName)) {
                     System.out.println("Такой команды не существует");
                 }
                 if (((commandManager.getCommandMap().get(commandName)) && (command[1].isEmpty())) || (!(commandManager.getCommandMap().get(commandName)) && !(command[1].isEmpty()))) {
@@ -148,18 +149,21 @@ public class Runner implements Runnable {
                             break;
                         } catch (NumberFormatException e) {
                             outputManager.println("Неправильный аргумент");
+                        } catch (SocketTimeoutException e) {
+                            throw new RuntimeException(e);
                         }
                     }
-                }
-                if (commandName.equals("execute_script")) {
+                } else {
                     outputManager.println("Скрипт не может вызываться рекурсивно");
                 }
             } catch (InvalidInputException e) {
                 outputManager.printerr("Неверный ввод данных ");
+            } catch (NullPointerException e) {
+            } catch (SocketTimeoutException e) {
+                outputManager.printerr("Время ожидания вышло.");
             } catch (IOException e) {
-                throw new RuntimeException(e);
             }
         }
-    }
+        }
 }
 
