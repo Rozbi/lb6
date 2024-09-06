@@ -1,10 +1,9 @@
 package server.commands;
 
-import client.managers.SendingManager;
 import lib.utility.Message;
 import server.managers.CollectionManager;
-import lib.managers.OutputManager;
 import server.managers.ServerSendingManager;
+import server.managers.UserManager;
 
 public class RemoveById extends Command {
     private static String name;
@@ -12,7 +11,7 @@ public class RemoveById extends Command {
     private CollectionManager collectionManager;
     private ServerSendingManager sendingManager;
     private boolean k;
-    public RemoveById(String name, String description, CollectionManager collectionManager, ServerSendingManager sendingManager) {
+    public RemoveById(String name, String description, CollectionManager collectionManager, ServerSendingManager sendingManager, UserManager userManager) {
         super("remove_by_id", "удалить элемент из коллекции по его id");
         this.name = name;
         this.description=description;

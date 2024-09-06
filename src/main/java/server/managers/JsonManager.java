@@ -74,20 +74,20 @@ public class JsonManager {
 /*@args
         PriorityQueue<SpaceMarine> collection
      */
-    public void writeCollection(PriorityQueue<SpaceMarine> collection) throws IOException {
-        try {
-            var jsonElement = convertToJson(collection);
-            if (jsonElement == null) return;
-            Writer writer = new FileWriter(System.getenv("CAPIPA"));
-            try {
-                writer.write(jsonElement);
-                writer.flush();
-                writer.close();
-            } catch (RuntimeException e) {
-            }
-        } catch (IOException e) {
-        }
-    }
+//    public void writeCollection(PriorityQueue<SpaceMarine> collection) throws IOException {
+//        try {
+//            var jsonElement = convertToJson(collection);
+//            if (jsonElement == null) return;
+//            Writer writer = new FileWriter(System.getenv("CAPIPA"));
+//            try {
+//                writer.write(jsonElement);
+//                writer.flush();
+//                writer.close();
+//            } catch (RuntimeException e) {
+//            }
+//        } catch (IOException e) {
+//        }
+//    }
 
         /**
      * чтение коллекции из файла

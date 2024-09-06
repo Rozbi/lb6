@@ -2,15 +2,15 @@ package server.commands;
 
 import lib.utility.Message;
 import server.managers.CollectionManager;
-import lib.managers.OutputManager;
 import server.managers.ServerSendingManager;
+import server.managers.UserManager;
 
 public class Clear extends Command {
     private static String name;
     private static String description;
     private CollectionManager collectionManager;
     private ServerSendingManager serverSendingManager;
-    public Clear(String name, String description, CollectionManager collectionManager, ServerSendingManager serverSendingManager) {
+    public Clear(String name, String description, CollectionManager collectionManager, ServerSendingManager serverSendingManager, UserManager userManager) {
         super("clear", "очистить коллекцию");this.name = name;
         this.description=description;
         this.collectionManager = collectionManager;

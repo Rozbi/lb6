@@ -2,9 +2,9 @@ package server.commands;
 
 import lib.utility.Message;
 import server.managers.CollectionManager;
-import lib.managers.OutputManager;
 import lib.spaceMarine.SpaceMarine;
 import server.managers.ServerSendingManager;
+import server.managers.UserManager;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -14,7 +14,7 @@ public class PrintDescending extends Command {
     private static String description;
     private CollectionManager collectionManager;
     private ServerSendingManager sendingManager;
-    public PrintDescending(String name, String description, CollectionManager collectionManager, ServerSendingManager sendingManager) {
+    public PrintDescending(String name, String description, CollectionManager collectionManager, ServerSendingManager sendingManager, UserManager userManager) {
         super("print_descending", "вывести элементы коллекции в порядке убывания");
         this.name = name;
         this.description=description;

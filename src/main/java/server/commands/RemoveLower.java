@@ -1,17 +1,15 @@
 package server.commands;
 
-import client.managers.SendingManager;
 import lib.utility.Message;
 import server.exeptions.InvalidInputException;
 import server.managers.CollectionManager;
 import lib.managers.InputManager;
-import lib.managers.OutputManager;
 import lib.spaceMarine.SpaceMarine;
 import client.utility.Ask;
 import server.managers.ServerSendingManager;
+import server.managers.UserManager;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.PriorityQueue;
 import java.util.stream.Collectors;
 
@@ -23,7 +21,7 @@ public class RemoveLower extends Command {
     private ServerSendingManager sendingManager;
     private Ask ask;
 
-    public RemoveLower(String name, String description, CollectionManager collectionManager, ServerSendingManager sendingManager) {
+    public RemoveLower(String name, String description, CollectionManager collectionManager, ServerSendingManager sendingManager, UserManager userManager) {
         super("remove_lower", "удалить из коллекции все элементы, меньшие, чем заданный");
         this.name = name;
         this.description = description;

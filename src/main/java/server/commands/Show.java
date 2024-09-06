@@ -1,9 +1,9 @@
 package server.commands;
 
-import lib.managers.OutputManager;
 import lib.utility.Message;
 import server.managers.CollectionManager;
 import server.managers.ServerSendingManager;
+import server.managers.UserManager;
 
 public class Show extends Command {
     private CollectionManager collectionManager;
@@ -11,7 +11,7 @@ public class Show extends Command {
     private static String description;
     private ServerSendingManager sendingManager;
 
-    public Show(String name, String description, CollectionManager collectionManager, ServerSendingManager sendingManager) {
+    public Show(String name, String description, CollectionManager collectionManager, ServerSendingManager sendingManager, UserManager userManager) {
         super("show", "вывести в стандартный поток вывода все элементы коллекции в строковом представлении");
         this.name = name;
         this.description = description;

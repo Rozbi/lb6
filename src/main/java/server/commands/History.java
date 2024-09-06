@@ -2,15 +2,15 @@ package server.commands;
 
 import lib.utility.Message;
 import server.managers.CollectionManager;
-import lib.managers.OutputManager;
 import server.managers.ServerSendingManager;
+import server.managers.UserManager;
 
 public class History extends Command {
     private static String name;
     private static String description;
     private CollectionManager collectionManager;
     private ServerSendingManager sendingManager;
-    public History(String name, String description, CollectionManager collectionManager, ServerSendingManager sendingManager) {
+    public History(String name, String description, CollectionManager collectionManager, ServerSendingManager sendingManager, UserManager userManager) {
         super("history", "вывести последние 14 команд");this.name = name;
         this.description=description;
         this.collectionManager = collectionManager;

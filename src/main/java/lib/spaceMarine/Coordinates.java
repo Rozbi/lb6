@@ -11,6 +11,15 @@ public class Coordinates implements Validatable {
         this.x=x;
         this.y=y;
     }
+
+    public Long getX() {
+        return x;
+    }
+
+    public float getY() {
+        return y;
+    }
+
     /** возвращает true, если поля удовлетворяют условиям, иначе false */
     @Override
     public boolean validate() {

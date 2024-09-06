@@ -32,8 +32,10 @@ public class Main {
         Collections.sort(list, comparator);
         priora.addAll(list);
         collectionManager.setCollection(priora);
+        SQLconnector sqlconnector = new SQLconnector();
+        UserManager userManager = new UserManager(sqlconnector, serverSendingManager);
         ServerReceivingManager serverReceivingManager = new ServerReceivingManager(serverConnector, serverSendingManager);
-        CommandManager commandManager = new CommandManager(collectionManager, serverSendingManager);
+        CommandManager commandManager = new CommandManager(collectionManager, serverSendingManager, userManager);
         Runner runner = new Runner(collectionManager, commandManager, serverReceivingManager, serverSendingManager, serverConnector, inputManager, outputManager);
         runner.letsGo();
     }

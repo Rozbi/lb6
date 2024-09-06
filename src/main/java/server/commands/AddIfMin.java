@@ -3,11 +3,8 @@ package server.commands;
 import lib.spaceMarine.*;
 import lib.utility.Message;
 import server.managers.CollectionManager;
-import lib.managers.InputManager;
-import lib.managers.OutputManager;
-import client.utility.Ask;
-import server.managers.ServerReceivingManager;
 import server.managers.ServerSendingManager;
+import server.managers.UserManager;
 
 import java.time.LocalDateTime;
 
@@ -16,7 +13,7 @@ public class AddIfMin extends Command {
     private static String description;
     private CollectionManager collectionManager;
     private ServerSendingManager serverSendingManager;
-    public AddIfMin(String name, String description, CollectionManager collectionManager, ServerSendingManager serverSendingManager) {
+    public AddIfMin(String name, String description, CollectionManager collectionManager, ServerSendingManager serverSendingManager, UserManager userManager) {
         super("add_if_min", "добавить новый элемент в коллекцию, если его значение меньше, чем у наименьшего элемента этой коллекции");this.name = name;
         this.description=description;
         this.name = name;

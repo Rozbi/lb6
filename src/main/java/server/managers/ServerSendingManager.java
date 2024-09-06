@@ -18,6 +18,7 @@ public class ServerSendingManager {
     public ServerSendingManager(ServerConnector serverConnector) {
         this.serverConnector = serverConnector;
     }
+    //insert thread
       public void sendMessage(Message message) throws InvalidInputException, IOException {
           try (ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
                ObjectOutputStream objectOutputStream = new ObjectOutputStream(byteArrayOutputStream)) {

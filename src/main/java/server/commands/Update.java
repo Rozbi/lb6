@@ -3,11 +3,9 @@ package server.commands;
 import lib.spaceMarine.*;
 import lib.utility.Message;
 import server.managers.CollectionManager;
-import lib.managers.OutputManager;
-import lib.managers.InputManager;
 import server.managers.ServerSendingManager;
+import server.managers.UserManager;
 import server.utility.SpaceMarineComparator;
-import server.managers.ServerReceivingManager;
 
 import java.time.LocalDateTime;
 
@@ -17,7 +15,7 @@ public class Update extends Command {
     private CollectionManager collectionManager;
     private ServerSendingManager serverSendingManager;
     private boolean k;
-    public Update(String name, String description, CollectionManager collectionManager, ServerSendingManager serverSendingManager) {
+    public Update(String name, String description, CollectionManager collectionManager, ServerSendingManager serverSendingManager, UserManager userManager) {
         super("update", "обновить значение элемента коллекции, id которого равен заданному");
         this.name = name;
         this.serverSendingManager = serverSendingManager;

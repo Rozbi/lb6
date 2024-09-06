@@ -28,6 +28,8 @@ public class CommandManager {
         commandMap.put("update", true);
         commandMap.put("history", false);
         commandMap.put("save", false);
+        commandMap.put("login", false);
+        commandMap.put("register", false);
         return commandMap;
     }
     public HashMap<String, Boolean> getCommandMap() {

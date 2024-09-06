@@ -69,7 +69,7 @@ public class CollectionManager {
     }
     /**сохранение коллекции*/
     public void save() throws IOException {
-        jsonManager.writeCollection(collection);
+//        jsonManager.writeCollection(collection);
         Comparator.naturalOrder();
         setLastSaveTime(LocalDateTime.now());
     }

@@ -2,15 +2,15 @@ package server.commands;
 
 import lib.utility.Message;
 import server.managers.CollectionManager;
-import lib.managers.OutputManager;
 import server.managers.ServerSendingManager;
+import server.managers.UserManager;
 
 public class Info extends Command {
     private CollectionManager collectionManager;
     private static String name;
     private static String description;
     private ServerSendingManager sendingManager;
-    public Info(String name, String description, CollectionManager collectionManager, ServerSendingManager sendingManager) {
+    public Info(String name, String description, CollectionManager collectionManager, ServerSendingManager sendingManager, UserManager userManager) {
         super("info", "вывести в стандартный поток вывода информацию о коллекции");this.name = name;
         this.description=description;
         this.collectionManager = collectionManager;

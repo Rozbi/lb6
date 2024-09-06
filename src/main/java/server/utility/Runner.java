@@ -63,9 +63,11 @@ public class Runner implements Runnable {
             try {
                 commandManager.addCommands();
                 serverConnector.connect();
+
                 Message clientMessage = serverReceivingManager.receive();
                 String commandName = clientMessage.getName();
                 Command command = commandManager.getCommandMap().get(commandName);
+
                 collectionManager.history(command.getName());
                 command.execute(clientMessage);
 

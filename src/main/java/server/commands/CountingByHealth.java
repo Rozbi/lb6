@@ -5,8 +5,8 @@ import lib.spaceMarine.SpaceMarine;
 import lib.utility.Message;
 import server.managers.CollectionManager;
 import server.managers.JsonManager;
-import lib.managers.OutputManager;
 import server.managers.ServerSendingManager;
+import server.managers.UserManager;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -18,7 +18,7 @@ public class CountingByHealth extends Command {
     private CollectionManager collectionManager;
     private ServerSendingManager sendingManager;
     private JsonManager jsonManager;
-    public CountingByHealth(String name, String description, CollectionManager collectionManager, ServerSendingManager sendingManager) {
+    public CountingByHealth(String name, String description, CollectionManager collectionManager, ServerSendingManager sendingManager, UserManager userManager) {
         super("group_counting_by_health", "сгруппировать элементы коллекции по значению поля health, вывести количество элементов в каждой группе");this.name = name;
         this.description=description;
         this.collectionManager = collectionManager;

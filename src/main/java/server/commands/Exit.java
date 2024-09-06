@@ -1,10 +1,10 @@
 package server.commands;
 
 
-import lib.managers.OutputManager;
 import lib.utility.Message;
 import server.managers.CollectionManager;
 import server.managers.ServerSendingManager;
+import server.managers.UserManager;
 
 public class Exit extends Command {
     private static String name;
@@ -12,7 +12,7 @@ public class Exit extends Command {
     private ServerSendingManager sendingManager;
     private CollectionManager collectionManager;
 
-    public Exit(String name, String description, ServerSendingManager sendingManager, CollectionManager collectionManager) {
+    public Exit(String name, String description, ServerSendingManager sendingManager, CollectionManager collectionManager, UserManager userManager) {
         super("exit", "завершить программу (без сохранения в файл)");
         this.name = name;
         this.description = description;
