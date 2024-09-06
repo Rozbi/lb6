@@ -1,0 +1,83 @@
+[
+  {
+    "id": 1,
+    "name": "2",
+    "coordinates": {
+      "x": 2,
+      "y": 2.0
+    },
+    "creationDate": "2024-05-10T18:09:43.003761100",
+    "health": 2,
+    "heartCount": 2
+  },
+  {
+    "id": 2,
+    "name": "2",
+    "coordinates": {
+      "x": 2,
+      "y": 2.0
+    },
+    "creationDate": "2024-05-10T18:35:57.308355100",
+    "health": 2,
+    "heartCount": 2,
+    "category": "ASSAULT"
+  },
+  {
+    "id": 3,
+    "name": "2",
+    "coordinates": {
+      "x": 2,
+      "y": 2.0
+    },
+    "creationDate": "2024-06-11T14:22:27.334123",
+    "health": 2,
+    "heartCount": 2,
+    "category": "ASSAULT"
+  },
+  {
+    "id": 4,
+    "name": "12",
+    "coordinates": {
+      "x": 12,
+      "y": 12.0
+    },
+    "creationDate": "2024-06-11T14:28:17.351671300",
+    "health": 12,
+    "heartCount": 2
+  },
+  {
+    "id": 5,
+    "name": "1",
+    "coordinates": {
+      "x": 1,
+      "y": 1.0
+    },
+    "creationDate": "2024-06-11T14:29:45.448089",
+    "health": 1,
+    "heartCount": 1
+  },
+  {
+    "id": 6,
+    "name": "22",
+    "coordinates": {
+      "x": 33,
+      "y": 44.0
+    },
+    "creationDate": "2024-06-11T14:41:02.144995400",
+    "health": 55,
+    "heartCount": 2
+  },
+  {
+    "id": 7,
+    "name": "33",
+    "coordinates": {
+      "x": 44,
+      "y": 55.0
+    },
+    "creationDate": "2024-06-11T14:41:56.025400100",
+    "health": 11,
+    "heartCount": 2,
+    "category": "ASSAULT",
+    "meleeWeapon": "POWER_FIST"
+  }
+]

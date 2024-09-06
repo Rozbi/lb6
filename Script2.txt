@@ -1,0 +1,8 @@
+group_counting_by_health
+execute_script Script1.txt
+history
+print_ascending
+print_descending
+remove_by_id 100
+remove_by_id 1
+remove_lower 2
