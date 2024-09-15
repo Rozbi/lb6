@@ -1,4 +1,4 @@
-package server.utility;
+package lib.utility;
 
 public class User {
     private long id;
@@ -6,6 +6,10 @@ public class User {
     private String password;
     public User(long id, String login, String password) {
         this.id = id;
+        this.login = login;
+        this.password = password;
+    }
+    public User(String login, String password) {
         this.login = login;
         this.password = password;
     }

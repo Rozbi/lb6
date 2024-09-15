@@ -18,17 +18,19 @@ public class RemoveLower extends Command {
     private static String description;
     private CollectionManager collectionManager;
     private InputManager inputManager;
-    private ServerSendingManager sendingManager;
+    private ServerSendingManager serverSendingManager;
+    private UserManager userManager;
     private Ask ask;
 
-    public RemoveLower(String name, String description, CollectionManager collectionManager, ServerSendingManager sendingManager, UserManager userManager) {
+    public RemoveLower(String name, String description, CollectionManager collectionManager, ServerSendingManager serverSendingManager, UserManager userManager) {
         super("remove_lower", "удалить из коллекции все элементы, меньшие, чем заданный");
         this.name = name;
         this.description = description;
         this.ask = ask;
         this.collectionManager = collectionManager;
-        this.sendingManager = sendingManager;
+        this.serverSendingManager = serverSendingManager;
         this.inputManager = inputManager;
+        this.userManager=userManager;
     }
 
     @Override
@@ -43,20 +45,23 @@ public class RemoveLower extends Command {
 
     @Override
     public boolean execute(Message message) throws InvalidInputException, IOException {
-        try{
-            if (collectionManager.getCollection().isEmpty()) {
-                sendingManager.sendMessage(new Message(message.getName(), "коллекция пуста!", message.getAddress()));
+        if(userManager.getUserId(message.getUser().getLogin(), message.getUser().getPassword())!=0) {
+            try {
+                if (collectionManager.getCollection().isEmpty()) {
+                    serverSendingManager.sendMessage(new Message(message.getName(), "коллекция пуста!", message.getAddress()));
+                    return false;
+                } else {
+                    PriorityQueue<SpaceMarine> queue = collectionManager.getCollection().stream()
+                            .filter(spaceMarine -> spaceMarine.getId() > Long.parseLong(message.getEntity().toString()))
+                            .collect(Collectors.toCollection(PriorityQueue::new));
+                    collectionManager.setCollection(queue);
+                    serverSendingManager.sendMessage(new Message(message.getName(), "Элементы удалены", message.getAddress()));
+                    return true;
+                }
+            } catch (Exception e) {
                 return false;
-            } else {
-                PriorityQueue<SpaceMarine> queue = collectionManager.getCollection().stream()
-                        .filter(spaceMarine -> spaceMarine.getId()>Long.parseLong(message.getEntity().toString()))
-                        .collect(Collectors.toCollection(PriorityQueue::new));
-                collectionManager.setCollection(queue);
-                sendingManager.sendMessage(new Message(message.getName(), "Элементы удалены", message.getAddress()));
-                return true;
             }
-    } catch(Exception e){
+        }serverSendingManager.sendMessage(new Message("NonameUser", "Юзер не опознан.", message.getAddress()));
             return false;
-        }
     }
 }

@@ -1,13 +1,13 @@
 package server.managers;
 
 
-import lib.utility.Message;
-import server.exeptions.InvalidInputException;
-import server.utility.User;
+import lib.utility.User;
 
-import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.sql.*;
+import java.util.Base64;
 import java.util.LinkedList;
 import java.util.Objects;
 
@@ -18,29 +18,45 @@ public class UserManager {
 
     public UserManager(SQLconnector sqlconnector, ServerSendingManager sendingManager) {
         this.sqlconnector = sqlconnector;
-        this.sendingManager=sendingManager;
+        this.sendingManager = sendingManager;
     }
+
     //add user
-    public void addUser(User user) {
+    public boolean addUser(String name, String password) {
         try (Connection connection = sqlconnector.getConnectToSQL()) {
-            PreparedStatement preparedStatement = connection.prepareStatement("INSERT INTO Space_Marine_Users (LOGIN, PASSWORD) VALUES (?, ?)");
-            preparedStatement.setString(1, user.getLogin());
-            preparedStatement.setString(2, user.getPassword());
+            String SQL = "INSERT INTO USERS (USER_NAME, USER_PASSWORD) VALUES (?, ?)";
+            PreparedStatement preparedStatement = connection.prepareStatement(SQL);
+            preparedStatement.setString(1, name);
+            preparedStatement.setString(2, password.trim());
+            preparedStatement.executeUpdate();
+            return true;
         } catch (SQLException e) {
-            System.out.println("Ошибка добавления нового клиента");
+            return false;
         }
     }
+
+//    public void updateUser(User user) {
+//        String SQL = "UPDATE Users USER_NAME=?, USER_PASSWORD=? WHERE ID = ?";
+//        try (Connection conn = sqlconnector.getConnectToSQL()) {
+//            PreparedStatement preparedStatement = conn.prepareStatement(SQL);
+//            preparedStatement.setString(1, user.getLogin());
+//            preparedStatement.setString(2, user.getPassword());
+//            preparedStatement.execute(SQL);
+//        } catch (SQLException ex) {
+//            System.out.println("Не удалось обновить элемент в SQL");
+//        }
+//    }
 
 
     public LinkedList<User> select() {
         LinkedList<User> linkedListUsers = new LinkedList<>();
         try {
-            String SQL = "SELECT * FROM SpaceMarineUser;";
+            String SQL = "SELECT * FROM USERS;";
             try (Connection conn = sqlconnector.getConnectToSQL()) {
                 PreparedStatement preparedStatement = conn.prepareStatement(SQL);
                 ResultSet rs = preparedStatement.executeQuery(SQL);
                 while (rs.next()) {
-                    linkedListUsers.add(new User(rs.getInt("ID"), rs.getString("LOGIN"), rs.getString("PASSWORD")));
+                    linkedListUsers.add(new User(rs.getInt("ID"), rs.getString("USER_NAME"), rs.getString("USER_PASSWORD")));
                 }
                 rs.close();
             } catch (SQLException e) {
@@ -52,34 +68,47 @@ public class UserManager {
         return linkedListUsers;
     }
 
-
-    public boolean checkUser(String userLogin, String userPassword, InetSocketAddress address) {
-        this.adress=adress;
+    public String hashPassword(String password) {
         try {
-            String SQL = "SELECT * FROM SpaceMarineUser WHERE LOGIN = ?";
+            MessageDigest md = MessageDigest.getInstance("SHA-1");
+            byte[] hashedBytes = md.digest(password.getBytes());
+            return Base64.getEncoder().encodeToString(hashedBytes);
+
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException("Ошибка хэширования пароля: алгоритм SHA-1 не найден", e);
+        }
+    }
+
+    public boolean checkUser(String userLogin, String userPassword) {
+        try {
+            String SQL = "SELECT * FROM USERS WHERE USER_NAME = ?";
             try (Connection conn = sqlconnector.getConnectToSQL()) {
                 PreparedStatement preparedStatement = conn.prepareStatement(SQL);
                 preparedStatement.setString(1, userLogin);
-                ResultSet rs = preparedStatement.executeQuery(SQL);
-                String password = rs.getString("PASSWORD");
-                return Objects.equals(password, userPassword);
+                ResultSet rs = preparedStatement.executeQuery();
+                if (rs.next()) {
+                    String password = rs.getString("USER_PASSWORD");
+                    return Objects.equals(password, userPassword);
+                }
             } catch (SQLException e) {
-                sendingManager.sendMessage(new Message("ErrorLogin", "Пользователь не найден", adress));
+                return false;
             }
-        }catch (RuntimeException | InvalidInputException | IOException e) {
+        } catch (Exception e) {
         }
         return false;
     }
+
     public long getUserId(String userLogin, String userPassword) {
-        this.adress = adress;
         try {
-            String SQL = "SELECT * FROM SpaceMarineUser WHERE LOGIN = ? and PASSWORD = ?";
+            String SQL = "SELECT * FROM USERS WHERE USER_NAME = ? and USER_PASSWORD = ?";
             try (Connection conn = sqlconnector.getConnectToSQL()) {
                 PreparedStatement preparedStatement = conn.prepareStatement(SQL);
                 preparedStatement.setString(1, userLogin);
                 preparedStatement.setString(2, userPassword);
-                ResultSet rs = preparedStatement.executeQuery(SQL);
-                return rs.getLong("USER_ID");
+                ResultSet rs = preparedStatement.executeQuery();
+                if (rs.next()) {
+                    return rs.getLong("ID");
+                }
             } catch (SQLException e) {
                 throw new RuntimeException(e);
             }
@@ -87,4 +116,4 @@ public class UserManager {
         }
         return 0;
     }
-    }
+}

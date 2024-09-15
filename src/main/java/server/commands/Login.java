@@ -1,6 +1,7 @@
 package server.commands;
 
 import lib.utility.Message;
+import lib.utility.User;
 import server.exeptions.InvalidInputException;
 import server.managers.ServerSendingManager;
 import server.managers.UserManager;
@@ -25,11 +26,14 @@ public class Login extends Command {
     public boolean execute(Message message) throws InvalidInputException, IOException {
         String user = message.getEntity().toString();
         String[] inputTrim = (user.trim() + " ").split(" ", 2);
-        String login = inputTrim[0];
-        String psswd = inputTrim[1];
-        if (userManager.checkUser(login, psswd, message.getAddress())) {
-            serverSendingManager.sendMessage(new Message(message.getName(), "Добро пожаловать!" + userManager.getUserId(login, psswd), message.getAddress()));
+        String login = inputTrim[0].trim();
+        String psswd = inputTrim[1].trim();
+        String hashedPassword = userManager.hashPassword(psswd);
+        if (userManager.checkUser(login, hashedPassword)) {
+            serverSendingManager.sendMessage(new Message("SuccessLogin", "Добро пожаловать!", new User(userManager.getUserId(login, hashedPassword), login, hashedPassword), message.getAddress()));
+            return true;
         }
+        serverSendingManager.sendMessage(new Message("ErrorLogin", "Логин или пароль не совпадают!", message.getAddress()));
         return false;
 
     }

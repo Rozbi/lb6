@@ -34,7 +34,7 @@ public class UdpClient {
         }
         try {
             datagramSocket = new DatagramSocket(portGetter.getClientPort());
-            datagramSocket.setSoTimeout(5000);
+            datagramSocket.setSoTimeout(500000);
         } catch (IOException e) {
             outputManager.printerr("Не удалось подключиться к хосту!");
         }

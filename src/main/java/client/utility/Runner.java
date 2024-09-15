@@ -1,11 +1,9 @@
 package client.utility;
-import client.managers.ReceivingManager;
+import client.managers.*;
 import lib.utility.Message;
+import lib.utility.User;
 import server.exeptions.InvalidInputException;
-import client.managers.CommandManager;
 import lib.managers.InputManager;
-import client.managers.SendingManager;
-import client.managers.UdpClient;
 import lib.managers.OutputManager;
 import lib.utility.Runnable;
 
@@ -14,6 +12,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
+import java.util.Objects;
 import java.util.Scanner;
 import java.util.concurrent.TimeUnit;
 
@@ -25,14 +24,16 @@ public class Runner implements Runnable {
     private UdpClient udpClient;
     private final CommandManager commandManager;
     private ReceivingManager receivingManager;
+    private UserManager userManager;
 
-    public Runner(OutputManager outputManager, CommandManager commandManager, InputManager inputManager, UdpClient udpClient, SendingManager sendingManager, Ask ask, ReceivingManager receivingManager) {
+    public Runner(OutputManager outputManager, CommandManager commandManager, InputManager inputManager, UdpClient udpClient, SendingManager sendingManager, Ask ask, ReceivingManager receivingManager, UserManager userManager) {
         this.sendingManager = sendingManager;
         this.receivingManager = receivingManager;
         this.udpClient = udpClient;
         this.outputManager = outputManager;
         this.inputManager = inputManager;
         this.commandManager = commandManager;
+        this.userManager = userManager;
     }
     /**
      * метод для запуска интерактивного режима
@@ -40,26 +41,14 @@ public class Runner implements Runnable {
     @Override
     public void letsGo() throws IOException, InvalidInputException {
         commandManager.addCommands();
-        while (true) {
-            outputManager.print("Выберите действие. Login/Register\n");
-            String input = inputManager.read().toLowerCase();
-            String[] command = (input.trim() + " ").split(" ", 2);
-            String name = command[0];
-            if (name.equals("login") || (name.equals("register"))) {
-                outputManager.print("Введите логин\n");
-                String loginInput = inputManager.read().toLowerCase();
-                String[] inputTrim = (loginInput.trim() + " ").split(" ", 2);
-                String login = inputTrim[0];
-                outputManager.print("Введите пароль\n");
-                String PsswdInput = inputManager.read().toLowerCase();
-                String[] PsswdTrim = (PsswdInput.trim() + " ").split(" ", 2);
-                String psswd = PsswdTrim[0];
-                Message userMessage = new Message(name, login + " " + psswd);
-                sendingManager.sendMessage(userMessage);
-                String recievedMessage = receivingManager.receive().toString();
-                String nameMessage = recievedMessage.split(" ", 2)[0];
-                switch (nameMessage) {
+        while (true) login: {
+            User userInput = userManager.register();
+            if (userInput==null) break login;
+            Message recievedMessage = receivingManager.receive();
+            outputManager.print(recievedMessage.getEntity().toString().split("!", 2)[0] + "\n");
+                switch (recievedMessage.getName()) {
                     case "SuccessLogin":
+                        User user = new User(Long.parseLong(recievedMessage.getEntity().toString().split("!", 2)[1]), userInput.getLogin(), userInput.getPassword());
                         outputManager.print("Введите название команды или команду help для просмотра доступных команд\n");
                         while (true) {
                             try {
@@ -67,40 +56,56 @@ public class Runner implements Runnable {
                                 String[] letsGoCommand = (letsGoInput.trim() + " ").split(" ", 2);
                                 String letsGoName = letsGoCommand[0];
                                 if (!commandManager.getCommandMap().containsKey(letsGoName)) {
-                                    outputManager.printerr("Такой команды не существует");
+                                    outputManager.printerr("Такой команды не существует\n");
                                     continue;
                                 }
                                 if ((!(commandManager.getCommandMap().get(letsGoName)) && !(letsGoCommand[1].isEmpty())) || ((commandManager.getCommandMap().get(letsGoName)) && (letsGoCommand[1].isEmpty()))) {
-                                    outputManager.printerr("Неправильное количество аргументов!");
+                                    outputManager.printerr("Неправильное количество аргументов!\n");
                                     continue;
                                 }
                                 switch (letsGoName) {
                                     case "execute_script": {
                                         String argument = letsGoCommand[1].trim();
-                                        letsGoScript(new InputManager(new Scanner(new File(argument))));
+                                        letsGoScript(new InputManager(new Scanner(new File(argument))), user);
+                                        if (Objects.equals(receivingManager.receive().getName(), "NonameUser")){
+                                            break login;
+                                        }
                                     }
                                     case "add", "add_if_min", "update": {
                                         Ask ask = new Ask(inputManager, outputManager);
                                         String argument = ask.getSpaceMarineComponents();
                                         String idArgument = letsGoCommand[1];
-                                        Message message = new Message(letsGoName, idArgument + argument);
+                                        Message message = new Message(letsGoName, idArgument + argument, user);
                                         sendingManager.sendMessage(message);
-                                        outputManager.prettyPrint(receivingManager.receive());
+
+                                        Message mess = receivingManager.receive();
+
+                                        outputManager.prettyPrint(mess);
+                                        if (Objects.equals(mess.getName(), "NonameUser")){
+                                            break login;
+                                        }
                                         break;
                                     }
                                     case "exit": {
-                                        Message message = new Message(letsGoName, "");
+                                        Message message = new Message(letsGoName, user);
                                         sendingManager.sendMessage(message);
-                                        outputManager.prettyPrint(receivingManager.receive());
-                                        System.exit(0);
+                                        Message mess = receivingManager.receive();
+                                        outputManager.prettyPrint(mess);
+                                        if (Objects.equals(mess.getName(), "NonameUser")){
+                                            break login;
+                                        }
+                                            System.exit(0);
                                     }
                                     default: {
                                         if (letsGoCommand[1].isEmpty()) {
-                                            letsGoCommand[1] = "";
-                                            Message message = new Message(letsGoName, letsGoCommand[1]);
-                                            udpClient.connect();
+                                            Message message = new Message(letsGoName, user);
+                                            //udpClient.connect();
                                             sendingManager.sendMessage(message);
-                                            outputManager.prettyPrint(receivingManager.receive());
+                                            Message mess = receivingManager.receive();
+                                            outputManager.prettyPrint(mess);
+                                            if (Objects.equals(mess.getName(), "NonameUser")){
+                                            break login;
+                                        }
                                             break;
                                         } else {
                                             String argument = letsGoCommand[1].trim();
@@ -110,9 +115,13 @@ public class Runner implements Runnable {
                                                 outputManager.printerr("Неправильный аргумент");
                                                 break;
                                             }
-                                            Message message = new Message(letsGoName, argument);
+                                            Message message = new Message(letsGoName, argument, user);
                                             sendingManager.sendMessage(message);
-                                            outputManager.prettyPrint(receivingManager.receive());
+                                            Message mess = receivingManager.receive();
+                                            outputManager.prettyPrint(mess);
+                                            if (Objects.equals(mess.getName(), "NonameUser")){
+                                            break login;
+                                        }
                                             break;
                                         }
 
@@ -130,12 +139,12 @@ public class Runner implements Runnable {
                 }
             }
         }
-    }
+
 
         /**
          * метод для запуска интерактивного режима в execute_script
          */
-        public void letsGoScript (InputManager inputManager){
+        public void letsGoScript (InputManager inputManager, User user) {
 
             commandManager.addCommands();
             while (InputManager.getScanner().hasNextLine()) {
@@ -153,7 +162,7 @@ public class Runner implements Runnable {
                     if (!commandName.equals("execute_script")) {
                         if (command[1].isEmpty()) {
                             command[1] = "";
-                            Message message = new Message(commandName, command[1]);
+                            Message message = new Message(commandName, command[1], user);
                             sendingManager.sendMessage(message);
                             Message serverMessage = receivingManager.receive();
                             outputManager.print(serverMessage.toString());
@@ -162,7 +171,7 @@ public class Runner implements Runnable {
                             String argument = command[1].trim();
                             try {
                                 Integer.parseInt(argument);
-                                Message message = new Message(commandName, argument);
+                                Message message = new Message(commandName, argument, user);
                                 sendingManager.sendMessage(message);
                                 Message serverMessage = receivingManager.receive();
                                 outputManager.print(serverMessage.toString());

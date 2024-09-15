@@ -7,6 +7,7 @@ public class Message implements Serializable {
     String name;
     Serializable entity;
     InetSocketAddress address;
+    User user;
     public Message(String name, Serializable entity, InetSocketAddress address) {
         this.name = name;
         this.entity = entity;
@@ -16,6 +17,22 @@ public class Message implements Serializable {
         this.name = name;
         this.entity = entity;
     }
+     public Message(String name, Serializable entity, User user) {
+        this.name = name;
+        this.entity = entity;
+        this.user = user;
+    }
+     public Message(String name, Serializable entity, User user, InetSocketAddress address) {
+        this.name = name;
+        this.entity = entity;
+        this.user = user;
+        this.address = address;
+    }
+      public Message(String name, User user) {
+        this.name = name;
+        this.user = user;
+    }
+
 
     @Override
     public String toString() {
@@ -27,6 +44,10 @@ public class Message implements Serializable {
 
     public String getName() {
         return name;
+    }
+
+    public User getUser() {
+        return user;
     }
 
     public Serializable getEntity() {

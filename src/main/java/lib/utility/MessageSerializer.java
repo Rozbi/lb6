@@ -14,7 +14,10 @@ public class MessageSerializer implements JsonDeserializer<Message> {
         JsonObject jsonObject = jsonElement.getAsJsonObject();
 
         Serializable name = jsonObject.get("name").getAsString();
-        Serializable entity = jsonObject.get("entity").getAsString();
+        var entityObject = jsonObject.get("entity");
+        Serializable entity = null;
+        if (entityObject != null)
+            entity = entityObject.getAsString();
 
         try {
             return new Message(name.toString(), entity);

@@ -1,12 +1,16 @@
 package server.commands;
 
+import client.managers.SendingManager;
 import lib.spaceMarine.*;
 import lib.utility.Message;
+import server.exeptions.InvalidInputException;
 import server.managers.CollectionManager;
 import client.utility.Ask;
+import server.managers.SQLManager;
 import server.managers.ServerSendingManager;
 import server.managers.UserManager;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 
 public class Add extends Command {
@@ -15,12 +19,14 @@ public class Add extends Command {
     private CollectionManager collectionManager;
     private Ask ask;
     private ServerSendingManager serverSendingManager;
+    private UserManager userManager;
     public Add(String name, String description, CollectionManager collectionManager, ServerSendingManager serverSendingManager, UserManager userManager){
         super("add", "добавить новый элемент в коллекцию");
         this.name = name;
         this.description=description;
         this.collectionManager=collectionManager;
         this.serverSendingManager=serverSendingManager;
+        this.userManager=userManager;
     }
     @Override
     public String getName(){
@@ -31,21 +37,23 @@ public class Add extends Command {
         return description;
     }
     @Override
-    public boolean execute(Message message){
-        try{
-
-            String [] sm = message.getEntity().toString().split(" ");
-            try{
-                SpaceMarine spaceMarine = new SpaceMarine(collectionManager.getCurrentId(), sm[0], new Coordinates(Long.parseLong(sm[1]), Float.parseFloat(sm[2])), LocalDateTime.now(), Long.parseLong(sm[3]), Integer.parseInt(sm[4]), sm[5].equals("null") ? null : AstartesCategory.valueOf(sm[5]), sm[6].equals("null") ? null : MeleeWeapon.valueOf(sm[6]), new Chapter(sm[7], sm[8]));
-                collectionManager.add(spaceMarine);
-            } catch (IndexOutOfBoundsException e){
-                SpaceMarine spaceMarine = new SpaceMarine(collectionManager.getCurrentId(), sm[0], new Coordinates(Long.parseLong(sm[1]), Float.parseFloat(sm[2])), LocalDateTime.now(), Long.parseLong(sm[3]), Integer.parseInt(sm[4]), sm[5].equals("null") ? null : AstartesCategory.valueOf(sm[5]), sm[6].equals("null") ? null : MeleeWeapon.valueOf(sm[6]), null);
-                collectionManager.add(spaceMarine);
-            }
-            serverSendingManager.sendMessage(new Message("add", "Элемент успешно добавлен в коллекцию", message.getAddress()));
+    public boolean execute(Message message) throws InvalidInputException, IOException {
+        if(userManager.getUserId(message.getUser().getLogin(), message.getUser().getPassword())!=0) {
+            try {
+                String[] sm = message.getEntity().toString().split(" ");
+                try {
+                    SpaceMarine spaceMarine = new SpaceMarine(collectionManager.getCurrentId(), sm[0], new Coordinates(Long.parseLong(sm[1]), Float.parseFloat(sm[2])), LocalDateTime.now(), Long.parseLong(sm[3]), Integer.parseInt(sm[4]), sm[5].equals("null") ? null : AstartesCategory.valueOf(sm[5]), sm[6].equals("null") ? null : MeleeWeapon.valueOf(sm[6]), new Chapter(sm[7], sm[8]));
+                    collectionManager.add(spaceMarine);
+                } catch (IndexOutOfBoundsException e) {
+                    SpaceMarine spaceMarine = new SpaceMarine(collectionManager.getCurrentId(), sm[0], new Coordinates(Long.parseLong(sm[1]), Float.parseFloat(sm[2])), LocalDateTime.now(), Long.parseLong(sm[3]), Integer.parseInt(sm[4]), sm[5].equals("null") ? null : AstartesCategory.valueOf(sm[5]), sm[6].equals("null") ? null : MeleeWeapon.valueOf(sm[6]), null);
+                    collectionManager.add(spaceMarine);
+                }
+                serverSendingManager.sendMessage(new Message("add", "Элемент успешно добавлен в коллекцию", message.getAddress()));
                 return true;
-    }catch (Exception e){
-            return false;
-        }
+            } catch (Exception e) {
+                return false;
+            }
+        } serverSendingManager.sendMessage(new Message("NonameUser", "Юзер не опознан.", message.getAddress()));
+                return false;
     }
 }

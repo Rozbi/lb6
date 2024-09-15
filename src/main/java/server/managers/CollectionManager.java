@@ -67,12 +67,6 @@ public class CollectionManager {
     public void clear(){
         collection.clear();
     }
-    /**сохранение коллекции*/
-    public void save() throws IOException {
-//        jsonManager.writeCollection(collection);
-        Comparator.naturalOrder();
-        setLastSaveTime(LocalDateTime.now());
-    }
     public PriorityQueue<SpaceMarine> getCollection(){
         return collection;
     }

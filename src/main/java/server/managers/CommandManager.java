@@ -11,11 +11,13 @@ public class CommandManager {
     private ServerSendingManager serverSendingManager;
     private UserManager userManager;
     private final HashMap<String, Command> commandMap = new HashMap<>();
+    private SQLManager sqlManager;
 
-    public CommandManager(CollectionManager collectionManager, ServerSendingManager serverSendingManager, UserManager userManager) {
+    public CommandManager(CollectionManager collectionManager, ServerSendingManager serverSendingManager, UserManager userManager, SQLManager sqlManager) {
         this.serverSendingManager = serverSendingManager;
         this.collectionManager = collectionManager;
         this.userManager = userManager;
+        this.sqlManager = sqlManager;
     }
 
     /**
@@ -33,9 +35,9 @@ public class CommandManager {
         commandMap.put("add_if_min", new AddIfMin("add_if_min", "добавить новый элемент в коллекцию, если его значение меньше чем у наименьшего элемента этой коллекции", collectionManager, serverSendingManager, userManager));
         commandMap.put("print_ascending", new PrintAscending("print_ascending", "вывести элементы коллекции в порядке возрастания", collectionManager, serverSendingManager, userManager));
         commandMap.put("print_descending", new PrintDescending("print_descending", "вывести элементы коллекции в порядке убывания", collectionManager, serverSendingManager, userManager));
-        commandMap.put("remove_by_id", new RemoveById("remove_by_id {id}", "удалить элемент из коллекции по его id", collectionManager, serverSendingManager, userManager));
+        commandMap.put("remove_by_id", new RemoveById("remove_by_id {id}", "удалить элемент из коллекции по его id", collectionManager, serverSendingManager, userManager, sqlManager));
         commandMap.put("remove_lower", new RemoveLower("remove_lower {id}", "удалить из коллекции элементы меньшиe чем заданный", collectionManager, serverSendingManager, userManager));
-        commandMap.put("exit", new Exit("exit", "завершить программу", serverSendingManager, collectionManager, userManager));
+        commandMap.put("exit", new Exit("exit", "завершить программу", serverSendingManager, collectionManager, sqlManager, userManager));
         commandMap.put("show", new Show("show", "вывести содержимое коллекции", collectionManager, serverSendingManager, userManager));
         commandMap.put("update", new Update("update {id}", "обновить значение элемента коллекции id которого равен заданному", collectionManager, serverSendingManager, userManager));
         commandMap.put("history", new History("history", "вывести последние 14 команд", collectionManager, serverSendingManager, userManager));

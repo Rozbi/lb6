@@ -24,6 +24,7 @@ public class Runner implements Runnable {
     private final OutputManager outputManager;
 
 
+
     public Runner(CollectionManager collectionManager, CommandManager commandManager, ServerReceivingManager serverReceivingManager, ServerSendingManager serverSendingManager, ServerConnector serverConnector, InputManager inputManager, OutputManager outputManager) {
         this.serverReceivingManager = serverReceivingManager;
         this.commandManager = commandManager;
@@ -48,9 +49,12 @@ public class Runner implements Runnable {
             }
             if (input.equals("save")) {
                 try {
-                    collectionManager.save();
+                    collectionManager.history("save");
+                    commandManager.getCommandMap().get("save").execute(new Message("save", ""));
                 } catch (IOException e) {
                     outputManager.printerr("Ошибка сохранения");
+                } catch (InvalidInputException e) {
+                    outputManager.printerr("Неправильный ввод\n");
                 }
                 outputManager.print("Коллекция успешно сохранена\n");
                 } else{
@@ -59,10 +63,11 @@ public class Runner implements Runnable {
         });
         thread.start();
 
+        commandManager.addCommands();
+        serverConnector.connect();
+
         while (true) {
             try {
-                commandManager.addCommands();
-                serverConnector.connect();
 
                 Message clientMessage = serverReceivingManager.receive();
                 String commandName = clientMessage.getName();
@@ -73,6 +78,7 @@ public class Runner implements Runnable {
 
             } catch (IOException | InterruptedException e) {
                 Message serverMessage = new Message("Error, ошибка выполнения сервером", "Код:1");
+                serverSendingManager.sendMessage(serverMessage);
             }
         }
     }

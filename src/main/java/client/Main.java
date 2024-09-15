@@ -24,8 +24,9 @@ public class Main {
         SendingManager sendingManager = new SendingManager(udpClient, jsonManager, outputManager, new InetSocketAddress("127.0.0.1", portGetter.getServerPort()));
         CommandManager commandManager = new CommandManager();
         ReceivingManager receivingManager = new ReceivingManager(udpClient, jsonManager, outputManager);
+        UserManager userManager = new UserManager(outputManager, inputManager, sendingManager);
 
-        Runner runner = new Runner(outputManager, commandManager, inputManager, udpClient, sendingManager, ask, receivingManager);
+        Runner runner = new Runner(outputManager, commandManager, inputManager, udpClient, sendingManager, ask, receivingManager, userManager);
         udpClient.connect();
         runner.letsGo();
     }
