@@ -26,6 +26,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ForkJoinPool;
 
 public class ExchangeChannel {
+
     private InetSocketAddress target;
     private DatagramChannel channel;
     private Selector selector;
@@ -38,8 +39,12 @@ public class ExchangeChannel {
     private final ForkJoinPool processPool = new ForkJoinPool();
     private final ExecutorService sendThreadPool = Executors.newFixedThreadPool(10);
 
-    public ExchangeChannel(InetSocketAddress target) {
-        this.target = target;
+    public ExchangeChannel(ServerConnector connector) {
+        this.connector = connector;
+        try{
+            connector.connect();
+        } catch (IOException e) {
+        }
     }
 
 
@@ -47,9 +52,9 @@ public class ExchangeChannel {
     // Создаем серверный сокет один раз
     try (DatagramSocket serverSocket = new DatagramSocket()) {
         while (true) {
-            selector = Selector.open();
+            selector = connector.getSelector();
             // Ожидаем, пока есть доступные ключи для селектора
-            selector.select();
+            selector.selectNow();
             Set<SelectionKey> selectedKeys = selector.selectedKeys();
             Iterator<SelectionKey> iterator = selectedKeys.iterator();
             while (iterator.hasNext()) {
