@@ -20,6 +20,7 @@ public class SpaceMarine implements Validatable, Serializable,Comparable<SpaceMa
     private AstartesCategory category; //Поле может быть null
     private MeleeWeapon meleeWeapon; //Поле может быть null
     private Chapter chapter; //Поле может быть null
+    private String user_name;
 
     public SpaceMarine(long id, String name, Coordinates coordinates, Long health, int heartCount, AstartesCategory category, MeleeWeapon meleeWeapon, Chapter chapter) {
         this.name = name;
@@ -31,6 +32,29 @@ public class SpaceMarine implements Validatable, Serializable,Comparable<SpaceMa
         this.coordinates = coordinates;
         this.chapter = chapter;
         this.meleeWeapon = meleeWeapon;
+    }
+        public SpaceMarine(String user_name, String name, Coordinates coordinates, LocalDateTime now, Long health, int heartCount, AstartesCategory category, MeleeWeapon meleeWeapon, Chapter chapter) {
+        this.name = name;
+        this.user_name = user_name;
+        this.health = health;
+        this.creationDate = LocalDateTime.now();
+        this.category = category;
+        this.heartCount = heartCount;
+        this.coordinates = coordinates;
+        this.chapter = chapter;
+        this.meleeWeapon = meleeWeapon;
+    }
+    public SpaceMarine(long id, String user_name, String name, Coordinates coordinates, LocalDateTime creationDate, Long health, int heartCount, AstartesCategory category, MeleeWeapon meleeWeapon, Chapter chapter) {
+        this.name = name;
+        this.id = id;
+        this.health = health;
+        this.creationDate = creationDate;
+        this.category = category;
+        this.heartCount = heartCount;
+        this.coordinates = coordinates;
+        this.chapter = chapter;
+        this.meleeWeapon = meleeWeapon;
+        this.user_name = user_name;
     }
     public SpaceMarine(long id, String name, Coordinates coordinates, LocalDateTime creationDate, Long health, int heartCount, AstartesCategory category, MeleeWeapon meleeWeapon, Chapter chapter) {
         this.name = name;
@@ -96,6 +120,9 @@ public class SpaceMarine implements Validatable, Serializable,Comparable<SpaceMa
 
     public long getId() {
         return id;
+    }
+    public String getUserName(){
+        return user_name;
     }
 
     public Coordinates getCoordinates() {

@@ -8,6 +8,7 @@ import server.managers.ServerSendingManager;
 import server.managers.UserManager;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 
 public class Save extends Command {
     private static String name;
@@ -38,14 +39,12 @@ public class Save extends Command {
 
     @Override
     public boolean execute(Message message) throws InvalidInputException, IOException {
-        if(userManager.getUserId(message.getUser().getLogin(), message.getUser().getPassword())!=0) {
             try {
-                sqlManager.createSpaceMarine(collectionManager.getCollection());
+                collectionManager.setLastSaveTime(LocalDateTime.now());
+                sqlManager.createSpaceMarine(collectionManager.getCollection(), message.getUser());
                 return true;
             } catch (Exception e) {
                 return false;
             }
-        }serverSendingManager.sendMessage(new Message("NonameUser", "Юзер не опознан.", message.getAddress()));
-            return false;
     }
 }

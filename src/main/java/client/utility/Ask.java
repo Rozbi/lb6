@@ -84,6 +84,7 @@ public class Ask {
                 outputManager.print("Ошибка чтения ");
             } catch (InvalidInputException e) {
                 outputManager.print("Неправильный ввод данных ");
+            } catch (NullPointerException e) {
             }
         }
     }

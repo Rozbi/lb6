@@ -1,6 +1,5 @@
 package server.commands;
 
-import client.managers.SendingManager;
 import lib.spaceMarine.*;
 import lib.utility.Message;
 import server.exeptions.InvalidInputException;
@@ -20,13 +19,15 @@ public class Add extends Command {
     private Ask ask;
     private ServerSendingManager serverSendingManager;
     private UserManager userManager;
-    public Add(String name, String description, CollectionManager collectionManager, ServerSendingManager serverSendingManager, UserManager userManager){
+    private SQLManager sqlManager;
+    public Add(String name, String description, CollectionManager collectionManager, ServerSendingManager serverSendingManager, UserManager userManager, SQLManager sqlManager){
         super("add", "добавить новый элемент в коллекцию");
         this.name = name;
         this.description=description;
         this.collectionManager=collectionManager;
         this.serverSendingManager=serverSendingManager;
         this.userManager=userManager;
+        this.sqlManager = sqlManager;
     }
     @Override
     public String getName(){
@@ -38,15 +39,18 @@ public class Add extends Command {
     }
     @Override
     public boolean execute(Message message) throws InvalidInputException, IOException {
-        if(userManager.getUserId(message.getUser().getLogin(), message.getUser().getPassword())!=0) {
+        if(userManager.getUserId(message.getUser().getLogin(), userManager.hashPassword(message.getUser().getPassword()))!=0) {
             try {
                 String[] sm = message.getEntity().toString().split(" ");
+                long id = 0;
                 try {
-                    SpaceMarine spaceMarine = new SpaceMarine(collectionManager.getCurrentId(), sm[0], new Coordinates(Long.parseLong(sm[1]), Float.parseFloat(sm[2])), LocalDateTime.now(), Long.parseLong(sm[3]), Integer.parseInt(sm[4]), sm[5].equals("null") ? null : AstartesCategory.valueOf(sm[5]), sm[6].equals("null") ? null : MeleeWeapon.valueOf(sm[6]), new Chapter(sm[7], sm[8]));
+                    SpaceMarine spaceMarine = new SpaceMarine(message.getUser().getLogin(), sm[0], new Coordinates(Long.parseLong(sm[1]), Float.parseFloat(sm[2])), LocalDateTime.now(), Long.parseLong(sm[3]), Integer.parseInt(sm[4]), sm[5].equals("null") ? null : AstartesCategory.valueOf(sm[5]), sm[6].equals("null") ? null : MeleeWeapon.valueOf(sm[6]), new Chapter(sm[7], sm[8]));
                     collectionManager.add(spaceMarine);
+                    sqlManager.createSpaceMarine(collectionManager.getCollection(), message.getUser());
                 } catch (IndexOutOfBoundsException e) {
-                    SpaceMarine spaceMarine = new SpaceMarine(collectionManager.getCurrentId(), sm[0], new Coordinates(Long.parseLong(sm[1]), Float.parseFloat(sm[2])), LocalDateTime.now(), Long.parseLong(sm[3]), Integer.parseInt(sm[4]), sm[5].equals("null") ? null : AstartesCategory.valueOf(sm[5]), sm[6].equals("null") ? null : MeleeWeapon.valueOf(sm[6]), null);
+                    SpaceMarine spaceMarine = new SpaceMarine(message.getUser().getLogin(), sm[0], new Coordinates(Long.parseLong(sm[1]), Float.parseFloat(sm[2])), LocalDateTime.now(), Long.parseLong(sm[3]), Integer.parseInt(sm[4]), sm[5].equals("null") ? null : AstartesCategory.valueOf(sm[5]), sm[6].equals("null") ? null : MeleeWeapon.valueOf(sm[6]), null);
                     collectionManager.add(spaceMarine);
+                    sqlManager.createSpaceMarine(collectionManager.getCollection(), message.getUser());
                 }
                 serverSendingManager.sendMessage(new Message("add", "Элемент успешно добавлен в коллекцию", message.getAddress()));
                 return true;

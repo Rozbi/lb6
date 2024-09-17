@@ -15,12 +15,14 @@ public class Clear extends Command {
     private CollectionManager collectionManager;
     private ServerSendingManager serverSendingManager;
     private UserManager userManager;
-    public Clear(String name, String description, CollectionManager collectionManager, ServerSendingManager serverSendingManager,UserManager userManager) {
+    private SQLManager sqlManager;
+    public Clear(String name, String description, CollectionManager collectionManager, ServerSendingManager serverSendingManager,UserManager userManager, SQLManager sqlManager) {
         super("clear", "очистить коллекцию");this.name = name;
         this.description=description;
         this.collectionManager = collectionManager;
         this.serverSendingManager = serverSendingManager;
         this.userManager=userManager;
+        this.sqlManager = sqlManager;
 
     }
     @Override
@@ -33,9 +35,10 @@ public class Clear extends Command {
     }
     @Override
     public boolean execute(Message message) throws InvalidInputException, IOException {
-        if(userManager.getUserId(message.getUser().getLogin(), message.getUser().getPassword())!=0) {
+        if(userManager.getUserId(message.getUser().getLogin(), userManager.hashPassword(message.getUser().getPassword()))!=0) {
             try {
                 collectionManager.clear();
+                sqlManager.clearSpaceMarines();
                 serverSendingManager.sendMessage(new Message(message.getName(), "Коллекция очищена ", message.getAddress()));
                 return true;
             } catch (Exception e) {

@@ -36,7 +36,7 @@ public class RemoveById extends Command {
     }
      @Override
     public boolean execute(Message message) throws InvalidInputException, IOException {
-        if(userManager.getUserId(message.getUser().getLogin(), message.getUser().getPassword())!=0) {
+        if(userManager.getUserId(message.getUser().getLogin(), userManager.hashPassword(message.getUser().getPassword()))!=0) {
             try {
                 for (var spaceMarine : collectionManager.getCollection()) {
                     if ((spaceMarine.getId()) == Long.parseLong(message.getEntity().toString())) {

@@ -15,17 +15,21 @@ public class MessageSerializer implements JsonDeserializer<Message> {
 
         Serializable name = jsonObject.get("name").getAsString();
         var entityObject = jsonObject.get("entity");
+        var userObject = jsonObject.get("user");
+        Serializable user = null;
         Serializable entity = null;
         if (entityObject != null)
             entity = entityObject.getAsString();
-
-        try {
-            return new Message(name.toString(), entity);
-        } catch (Exception e) {
-            System.out.println("Некорректные данные в сохранении. " + e.getMessage());
-            System.exit(1);
-        }
-        return null;
+            if (userObject != null) {
+                user = jsonDeserializationContext.deserialize(jsonObject.get("user"), User.class);
+                try {
+                    return new Message(name.toString(), entity, (User) user);
+                } catch (Exception e) {
+                    System.out.println("Некорректные данные в сохранении. " + e.getMessage());
+                    System.exit(1);
+                }
+            }
+        return new Message(name.toString(), entity);
 
     }
 }

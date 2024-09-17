@@ -5,8 +5,10 @@ import server.exeptions.InvalidInputException;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.Objects;
+import lib.utility.Executable;
 
-public class Command {
+public abstract class Command implements Executable {
     private String name;
     private String description;
     public Command(String name, String description){
@@ -19,7 +21,21 @@ public class Command {
     public String getDescription() {
         return description;
     }
-    public boolean execute(Message message) throws IOException, InvalidInputException {
-        return false;
+
+     @Override
+    public String toString(){
+        return "Command{" + "name='" + name + '\'' + ", description='" + description + '\'' + '}';
     }
+    /**
+     * @return хеш код для поля имени и описания
+     */
+    @Override
+    public int hashCode(){
+        return Objects.hash(name,description);
+    }
+    /**
+     * @param o - объект сравнения
+     * @return сравнение объектов
+     */
+
 }

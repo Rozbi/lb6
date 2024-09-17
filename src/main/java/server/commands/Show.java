@@ -1,27 +1,36 @@
 package server.commands;
 
+import lib.spaceMarine.SpaceMarine;
 import lib.utility.Message;
 import server.exeptions.InvalidInputException;
 import server.managers.CollectionManager;
+import server.managers.SQLManager;
 import server.managers.ServerSendingManager;
 import server.managers.UserManager;
+import server.utility.SpaceMarineComparator;
 
 import java.io.IOException;
+import java.util.Comparator;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class Show extends Command {
-    private CollectionManager collectionManager;
     private static String name;
     private static String description;
     private ServerSendingManager serverSendingManager;
     private UserManager userManager;
+    private SQLManager sqlManager;
+    private SpaceMarineComparator comparator;
 
-    public Show(String name, String description, CollectionManager collectionManager, ServerSendingManager serverSendingManager, UserManager userManager) {
+    public Show(String name, String description, ServerSendingManager serverSendingManager, UserManager userManager, SQLManager sqlManager, SpaceMarineComparator comparator) {
         super("show", "вывести в стандартный поток вывода все элементы коллекции в строковом представлении");
         this.name = name;
         this.description = description;
-        this.collectionManager = collectionManager;
+        this.comparator = comparator;
         this.serverSendingManager = serverSendingManager;
         this.userManager=userManager;
+        this.sqlManager = sqlManager;
+
     }
 
     @Override
@@ -36,9 +45,12 @@ public class Show extends Command {
 
     @Override
     public boolean execute(Message message) throws InvalidInputException, IOException {
-        if(userManager.getUserId(message.getUser().getLogin(), message.getUser().getPassword())!=0) {
+        if(userManager.getUserId(message.getUser().getLogin(), userManager.hashPassword(message.getUser().getPassword()))!=0) {
             try {
-                serverSendingManager.sendMessage(new Message(message.getName(), collectionManager.getCollection().toString(), message.getAddress()));
+                List<SpaceMarine> sortedSpaceMarines = sqlManager.select().stream()
+    .   sorted(new SpaceMarineComparator())
+    .   collect(Collectors.toList());
+                serverSendingManager.sendMessage(new Message(message.getName(), sortedSpaceMarines.toString(), message.getAddress()));
                 return true;
             } catch (Exception e) {
                 return false;

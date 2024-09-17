@@ -4,6 +4,7 @@ import lib.spaceMarine.*;
 import lib.utility.Message;
 import server.exeptions.InvalidInputException;
 import server.managers.CollectionManager;
+import server.managers.SQLManager;
 import server.managers.ServerSendingManager;
 import server.managers.UserManager;
 
@@ -16,15 +17,17 @@ public class AddIfMin extends Command {
     private CollectionManager collectionManager;
     private ServerSendingManager serverSendingManager;
     private UserManager userManager;
+    private SQLManager sqlManager;
 
-    public AddIfMin(String name, String description, CollectionManager collectionManager, ServerSendingManager serverSendingManager, UserManager userManager) {
+
+    public AddIfMin(String name, String description, CollectionManager collectionManager, ServerSendingManager serverSendingManager, UserManager userManager, SQLManager sqlManager) {
         super("add_if_min", "добавить новый элемент в коллекцию, если его значение меньше, чем у наименьшего элемента этой коллекции");
-        this.name = name;
         this.description = description;
         this.name = name;
         this.collectionManager = collectionManager;
         this.serverSendingManager = serverSendingManager;
         this.userManager=userManager;
+        this.sqlManager = sqlManager;
     }
 
     @Override
@@ -39,7 +42,7 @@ public class AddIfMin extends Command {
 
     @Override
     public boolean execute(Message message) throws InvalidInputException, IOException {
-        if (userManager.getUserId(message.getUser().getLogin(), message.getUser().getPassword()) != 0) {
+        if (userManager.getUserId(message.getUser().getLogin(), userManager.hashPassword(message.getUser().getPassword())) != 0) {
             String[] sm = message.getEntity().toString().split(" ");
             try {
                 Long minElement = 1000L;
@@ -53,9 +56,10 @@ public class AddIfMin extends Command {
                     }
                 }
                 try {
-                    SpaceMarine element = new SpaceMarine(collectionManager.getCurrentId(), sm[0], new Coordinates(Long.parseLong(sm[1]), Float.parseFloat(sm[2])), LocalDateTime.now(), Long.parseLong(sm[3]), Integer.parseInt(sm[4]), sm[5].equals("null") ? null : AstartesCategory.valueOf(sm[5]), sm[6].equals("null") ? null : MeleeWeapon.valueOf(sm[6]), new Chapter(sm[7], sm[8]));
+                    SpaceMarine element = new SpaceMarine(sm[0], sm[1], new Coordinates(Long.parseLong(sm[1]), Float.parseFloat(sm[2])), LocalDateTime.now(), Long.parseLong(sm[3]), Integer.parseInt(sm[4]), sm[5].equals("null") ? null : AstartesCategory.valueOf(sm[5]), sm[6].equals("null") ? null : MeleeWeapon.valueOf(sm[6]), new Chapter(sm[7], sm[8]));
                     if (minElement > element.getHealth()) {
                         collectionManager.add(element);
+                        sqlManager.createSpaceMarine(collectionManager.getCollection(), message.getUser());
                         serverSendingManager.sendMessage(new Message(message.getName(), "Элемент добавлен в коллекцию", message.getAddress()));
                         return true;
                     } else {
@@ -63,9 +67,10 @@ public class AddIfMin extends Command {
                         return false;
                     }
                 } catch (IndexOutOfBoundsException e) {
-                    SpaceMarine element = new SpaceMarine(collectionManager.getCurrentId(), sm[0], new Coordinates(Long.parseLong(sm[1]), Float.parseFloat(sm[2])), LocalDateTime.now(), Long.parseLong(sm[3]), Integer.parseInt(sm[4]), sm[5].equals("null") ? null : AstartesCategory.valueOf(sm[5]), sm[6].equals("null") ? null : MeleeWeapon.valueOf(sm[6]), null);
+                    SpaceMarine element = new SpaceMarine(sm[0], sm[1], new Coordinates(Long.parseLong(sm[1]), Float.parseFloat(sm[2])), LocalDateTime.now(), Long.parseLong(sm[3]), Integer.parseInt(sm[4]), sm[5].equals("null") ? null : AstartesCategory.valueOf(sm[5]), sm[6].equals("null") ? null : MeleeWeapon.valueOf(sm[6]), null);
                     if (minElement > element.getHealth()) {
                         collectionManager.add(element);
+                        sqlManager.createSpaceMarine(collectionManager.getCollection(), message.getUser());
                         serverSendingManager.sendMessage(new Message(message.getName(), "Элемент добавлен в коллекцию", message.getAddress()));
                         return true;
                     } else {

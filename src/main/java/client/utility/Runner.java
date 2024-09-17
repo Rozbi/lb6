@@ -1,5 +1,6 @@
 package client.utility;
 import client.managers.*;
+import lib.spaceMarine.SpaceMarine;
 import lib.utility.Message;
 import lib.utility.User;
 import server.exeptions.InvalidInputException;
@@ -43,12 +44,14 @@ public class Runner implements Runnable {
         commandManager.addCommands();
         while (true) login: {
             User userInput = userManager.register();
-            if (userInput==null) break login;
+            if (userInput == null){
+                break login;
+            }
             Message recievedMessage = receivingManager.receive();
             outputManager.print(recievedMessage.getEntity().toString().split("!", 2)[0] + "\n");
                 switch (recievedMessage.getName()) {
                     case "SuccessLogin":
-                        User user = new User(Long.parseLong(recievedMessage.getEntity().toString().split("!", 2)[1]), userInput.getLogin(), userInput.getPassword());
+                        User user = new User(userInput.getId(), userInput.getLogin(), userInput.getPassword());
                         outputManager.print("Введите название команды или команду help для просмотра доступных команд\n");
                         while (true) {
                             try {
@@ -145,7 +148,6 @@ public class Runner implements Runnable {
          * метод для запуска интерактивного режима в execute_script
          */
         public void letsGoScript (InputManager inputManager, User user) {
-
             commandManager.addCommands();
             while (InputManager.getScanner().hasNextLine()) {
                 try {
@@ -153,45 +155,82 @@ public class Runner implements Runnable {
                     input = inputManager.read().toLowerCase();
                     String[] command = (input.trim() + " ").split(" ", 2);
                     String commandName = command[0];
+                    String argument = command[1];
                     if (!commandManager.getCommandMap().containsKey(commandName)) {
                         System.out.println("Такой команды не существует");
                     }
                     if (((commandManager.getCommandMap().get(commandName)) && (command[1].isEmpty())) || (!(commandManager.getCommandMap().get(commandName)) && !(command[1].isEmpty()))) {
                         System.out.println("Неправильное количество аргументов!");
                     }
-                    if (!commandName.equals("execute_script")) {
-                        if (command[1].isEmpty()) {
-                            command[1] = "";
-                            Message message = new Message(commandName, command[1], user);
-                            sendingManager.sendMessage(message);
-                            Message serverMessage = receivingManager.receive();
-                            outputManager.print(serverMessage.toString());
-                            break;
-                        } else {
-                            String argument = command[1].trim();
+                    switch (commandName) {
+                        case "execute_script": {
+                            outputManager.printerr("нельзя вызывать execute_script рекурсивно");
+                        }
+                        case "add": {
+                            Ask ask = new Ask(inputManager, outputManager);
                             try {
-                                Integer.parseInt(argument);
-                                Message message = new Message(commandName, argument, user);
-                                sendingManager.sendMessage(message);
-                                Message serverMessage = receivingManager.receive();
-                                outputManager.print(serverMessage.toString());
+                                String sm = ask.getSpaceMarineComponents();
+                                Message message = new Message(commandName, sm, user);
+                            sendingManager.sendMessage(message);
+                            Message mess = receivingManager.receive();
+                            outputManager.prettyPrint(mess);
+                            break;
+                            } catch(Exception e){
+                                outputManager.printerr("введены неправильные компоненты дя создания");
                                 break;
-                            } catch (NumberFormatException e) {
-                                outputManager.println("Неправильный аргумент");
-                            } catch (SocketTimeoutException e) {
-                                throw new RuntimeException(e);
                             }
                         }
-                    } else {
-                        outputManager.println("Скрипт не может вызываться рекурсивно");
+                        case "add_if_min", "update": {
+                            Ask ask = new Ask(inputManager, outputManager);
+                            try {
+                                String sm = ask.getSpaceMarineComponents();
+                                Message message = new Message(commandName, argument + " " + sm, user);
+                            sendingManager.sendMessage(message);
+                            Message mess = receivingManager.receive();
+                            outputManager.prettyPrint(mess);
+                            break;
+                            } catch(Exception e){
+                                outputManager.printerr("введены неправильные компоненты дя создания");
+                                break;
+                            }
+                        }
+                        case "exit": {
+                            Message message = new Message(commandName, user);
+                            sendingManager.sendMessage(message);
+                            Message mess = receivingManager.receive();
+                            outputManager.prettyPrint(mess);
+                            System.exit(0);
+                        }
+                        default: {
+                            if (argument.isEmpty()) {
+                                Message message = new Message(commandName, user);
+                                sendingManager.sendMessage(message);
+                                Message mess = receivingManager.receive();
+                                outputManager.prettyPrint(mess);
+                                break;
+                            } else {
+                                try {
+                                    Integer.parseInt(argument);
+                                } catch (NumberFormatException e) {
+                                    outputManager.printerr("Неправильный аргумент");
+                                    break;
+                                }
+                                Message message = new Message(commandName, argument, user);
+                                sendingManager.sendMessage(message);
+                                Message mess = receivingManager.receive();
+                                outputManager.prettyPrint(mess);
+                                break;
+                            }
+                        }
                     }
                 } catch (InvalidInputException e) {
-                    outputManager.printerr("Неверный ввод данных ");
-                } catch (NullPointerException e) {
+                    throw new RuntimeException(e);
                 } catch (SocketTimeoutException e) {
-                    outputManager.printerr("Время ожидания вышло.");
+                    throw new RuntimeException(e);
                 } catch (IOException e) {
-                }
+                    throw new RuntimeException(e);
+                } catch (NullPointerException e){
+                    }
             }
         }
     }

@@ -30,13 +30,13 @@ public class Help extends Command {
     }
 
     public boolean execute(Message message) throws InvalidInputException, IOException {
-        if(userManager.getUserId(message.getUser().getLogin(), message.getUser().getPassword())!=0) {
+        if(userManager.getUserId(message.getUser().getLogin(), userManager.hashPassword(message.getUser().getPassword()))!=0) {
             List<String> coms = new ArrayList<>();
             for (Command command : commands.values()) {
                 coms.add(command.getName() + ": " + command.getDescription());
-                sendingManager.sendMessage(new Message("help", coms.toString(), message.getAddress()));
-                return true;
-            }
+
+            } sendingManager.sendMessage(new Message("help", String.join("\n", coms), message.getAddress()));
+            return true;
         }
         sendingManager.sendMessage(new Message("NonameUser", "Юзер не опознан.", message.getAddress()));
         return false;

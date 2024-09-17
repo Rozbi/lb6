@@ -12,23 +12,11 @@ public class CollectionManager {
     private PriorityQueue<SpaceMarine> collection = new PriorityQueue<>();
     private LocalDateTime lastInitTime;
     private LocalDateTime lastSaveTime;
-    private long currentId;
-    private long id;
-    private JsonManager jsonManager;
+    private SQLManager sqlManager;
     private ArrayList<String> commands = new ArrayList<>(14);
-    public CollectionManager(JsonManager jsonManager) throws InvalidInputException, IOException {
-        this.jsonManager = jsonManager;
-        collection.addAll(jsonManager.readCollection());
-        long maxId = 0;
-        if (collection.isEmpty()){
-            currentId = 1;
-        } else{
-            for (var spaceMarine: collection){
-                if (spaceMarine.getId()>maxId){
-                    maxId = spaceMarine.getId();
-                }
-            } currentId = maxId+1;
-        }
+    public CollectionManager(SQLManager sqlManager) throws InvalidInputException, IOException {
+        this.sqlManager=sqlManager;
+        collection.addAll(sqlManager.select());
     }
 
     public void setCollection(PriorityQueue<SpaceMarine> collection) {
@@ -44,7 +32,6 @@ public class CollectionManager {
     public boolean add(SpaceMarine sm) {
         if (sm != null || sm.validate()) {
             collection.add(sm);
-            currentId += 1;
             return true;
         } else {
             return false;
@@ -69,9 +56,6 @@ public class CollectionManager {
     }
     public PriorityQueue<SpaceMarine> getCollection(){
         return collection;
-    }
-    public long getCurrentId(){
-        return currentId;
     }
 
     /**добавление названия команды в историю*/

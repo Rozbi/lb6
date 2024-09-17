@@ -31,7 +31,7 @@ public class History extends Command {
     }
      @Override
     public boolean execute(Message message) throws InvalidInputException, IOException {
-        if(userManager.getUserId(message.getUser().getLogin(), message.getUser().getPassword())!=0) {
+        if(userManager.getUserId(message.getUser().getLogin(), userManager.hashPassword(message.getUser().getPassword()))!=0) {
             try {
                 serverSendingManager.sendMessage(new Message("history", collectionManager.getHistory().toString(), message.getAddress()));
                 return true;
