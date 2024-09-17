@@ -1,5 +1,7 @@
 package server.managers;
 
+import lib.utility.PortGetter;
+
 import java.nio.channels.Selector;
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -22,19 +24,20 @@ public class ServerConnector {
             if (channel != null) {
                 channel.close();
             }
-            try {
+//            try {
                 this.channel = DatagramChannel.open();
                 channel.configureBlocking(false);
                 channel.bind(host);
-                channel.register(selector, SelectionKey.OP_ACCEPT);
-            } catch (UnknownHostException | IllegalArgumentException e) {
-            }
+                channel.register(selector, SelectionKey.OP_READ);
+//            } catch (UnknownHostException | IllegalArgumentException e) {
+//
+//            }
         }
         public InetSocketAddress getHost() {
             return this.host;
         }
         public DatagramChannel getChannel() {
-            return this.channel;
+            return channel;
         }
         public Selector getSelector(){
             return selector;

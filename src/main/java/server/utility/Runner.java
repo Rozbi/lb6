@@ -76,7 +76,7 @@ public class Runner implements Runnable {
                 collectionManager.history(command.getName());
                 command.execute(clientMessage);
 
-            } catch (IOException | InterruptedException e) {
+            } catch (IOException e) {
                 Message serverMessage = new Message("Error, ошибка выполнения сервером", "Код:1");
                 serverSendingManager.sendMessage(serverMessage);
             }

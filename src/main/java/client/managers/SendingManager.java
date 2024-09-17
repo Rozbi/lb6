@@ -5,11 +5,15 @@ import server.exeptions.InvalidInputException;
 import lib.utility.Message;
 import lib.managers.OutputManager;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.nio.ByteBuffer;
+import org.apache.commons.lang3.SerializationUtils;
 
 public class SendingManager {
     private final UdpClient udpClient;
@@ -27,12 +31,8 @@ public class SendingManager {
     }
 
 
-    public void sendMessage(Message message) throws InvalidInputException {
-        ByteBuffer buffer = ByteBuffer.wrap(jsonManager.gson.toJson(message).getBytes());
-        try {
-            udpClient.getChannel().send(buffer, host);
-        } catch (Exception e) {
-            outputManager.printerr("Ошибка отправки");
-        }
+    public void sendMessage(Message message) throws InvalidInputException, IOException {
+        ByteBuffer buffer = ByteBuffer.wrap(SerializationUtils.serialize(message));
+        udpClient.getChannel().write(buffer);
     }
 }

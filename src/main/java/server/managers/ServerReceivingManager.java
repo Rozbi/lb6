@@ -7,6 +7,8 @@ import java.net.*;
 import java.nio.ByteBuffer;
 import java.nio.channels.DatagramChannel;
 import java.util.Arrays;
+import java.util.concurrent.TimeUnit;
+import org.apache.commons.lang3.SerializationUtils;
 
 public class ServerReceivingManager {
     private final ServerConnector serverConnector;
@@ -18,24 +20,31 @@ public class ServerReceivingManager {
 
     }
 
-    public Message receive() throws IOException, InterruptedException {
-        for(;;){
-            try{
-                ByteBuffer buffer = ByteBuffer.allocate(4096);
-                InetSocketAddress sender = (InetSocketAddress) serverConnector.getChannel().receive(buffer);
-                    if(sender!= null){
-                        buffer.flip();
-                        ByteArrayInputStream bais = new ByteArrayInputStream(buffer.array(), 0, buffer.limit());
-                        JsonManager jsonManager = new JsonManager();
-                        Message message = jsonManager.gson.fromJson(new InputStreamReader(bais), Message.class);
-                        message.setAddress(sender);
-                        return message;
-                    }
-            } catch(Exception e){
-                Thread.sleep(3000);
-                serverConnector.getChannel().close();
-                serverConnector.connect();
-            }
+    public Message receive() throws IOException, SocketTimeoutException {
+    ByteBuffer buffer = ByteBuffer.allocate(4096);
+    InetSocketAddress senderAddress = null;
+
+    while (senderAddress == null) {
+        try {
+            TimeUnit.MILLISECONDS.sleep(100);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
         }
+
+        senderAddress = (InetSocketAddress) serverConnector.getChannel().receive(buffer);
     }
+
+    buffer.flip(); // Переключаем в режим чтения.
+
+    int bytesRead = buffer.remaining();
+    if (bytesRead <= 0) {
+        throw new IOException("No data received");
+    }
+
+    byte[] data = new byte[bytesRead];
+    buffer.get(data);
+    Message message = SerializationUtils.deserialize(buffer.array());
+
+    return message;
+}
 }

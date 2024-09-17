@@ -102,7 +102,7 @@ public class Runner implements Runnable {
                                     default: {
                                         if (letsGoCommand[1].isEmpty()) {
                                             Message message = new Message(letsGoName, user);
-                                            //udpClient.connect();
+                                            udpClient.connect();
                                             sendingManager.sendMessage(message);
                                             Message mess = receivingManager.receive();
                                             outputManager.prettyPrint(mess);

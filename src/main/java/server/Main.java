@@ -13,6 +13,7 @@ import server.utility.ExchangeChannel;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.nio.channels.DatagramChannel;
 import java.util.*;
 
 public class Main {
@@ -22,6 +23,7 @@ public class Main {
         PortGetter portGetter = new PortGetter();
         OutputManager outputManager = new OutputManager();
         InputManager inputManager = new InputManager(new Scanner(System.in));
+
         InetSocketAddress inetSocketAddress = new InetSocketAddress("localhost", portGetter.getServerPort());
         ServerConnector serverConnector = new ServerConnector(inetSocketAddress);
         exchangeChannel = new ExchangeChannel(serverConnector);
@@ -41,8 +43,8 @@ public class Main {
         CommandManager commandManager = new CommandManager(collectionManager, serverSendingManager, userManager, sqlManager, comparator);
         Runner runner = new Runner(collectionManager, commandManager, serverReceivingManager, serverSendingManager, serverConnector, inputManager, outputManager);
         exchangeChannel.setCommandManager(commandManager); // Передача CommandManager в ExchangeChannel
-        Thread serverThread = new Thread(exchangeChannel);
-        serverThread.run();
+//        Thread serverThread = new Thread(exchangeChannel);
+//        serverThread.run();
         runner.letsGo();
     }
 }

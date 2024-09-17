@@ -3,6 +3,7 @@ package server.managers;
 import lib.managers.OutputManager;
 import lib.utility.Message;
 import lib.utility.PortGetter;
+import org.apache.commons.lang3.SerializationUtils;
 import server.exeptions.InvalidInputException;
 
 import java.io.ByteArrayOutputStream;
@@ -20,16 +21,7 @@ public class ServerSendingManager {
     }
     //insert thread
       public void sendMessage(Message message) throws InvalidInputException, IOException {
-          try (ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-               ObjectOutputStream objectOutputStream = new ObjectOutputStream(byteArrayOutputStream)) {
-            serverConnector.connect();
-            objectOutputStream.writeObject(message);
-            if (message == null){
-                return;
-            }
-            serverConnector.getChannel().send(ByteBuffer.wrap(byteArrayOutputStream.toByteArray()), message.getAddress());
-        } catch (IOException e) {
-            throw new RuntimeException("Serialization error", e);
-        }
-      }
+          ByteBuffer buffer = ByteBuffer.wrap(SerializationUtils.serialize(message));
+          serverConnector.getChannel().send(buffer, message.getAddress());
+    }
 }

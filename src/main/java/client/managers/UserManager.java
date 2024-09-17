@@ -6,6 +6,8 @@ import lib.utility.Message;
 import lib.utility.User;
 import server.exeptions.InvalidInputException;
 
+import java.io.IOException;
+
 public class UserManager {
     private OutputManager outputManager;
     private InputManager inputManager;
@@ -16,7 +18,7 @@ public class UserManager {
         this.inputManager = inputManager;
     }
 
-    public User register() throws InvalidInputException {
+    public User register() throws InvalidInputException, IOException {
         outputManager.print("Выберите действие. Login/Register\n");
         String input = inputManager.read().toLowerCase();
         String[] command = (input.trim() + " ").split(" ", 2);

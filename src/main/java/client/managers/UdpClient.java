@@ -30,23 +30,17 @@ public class UdpClient {
 
 public void connect() {
     try {
-        // Создаем DatagramChannel и открываем его
+        InetSocketAddress serverAddress = new InetSocketAddress("127.0.0.1", portGetter.getServerPort());
         datagramChannel = DatagramChannel.open();
         datagramChannel.configureBlocking(false); // Устанавливаем неблокирующий режим
-
-        // Получаем адрес сервера
-        InetSocketAddress serverAddress = new InetSocketAddress("127.0.0.1", portGetter.getServerPort());
-
-        // Пробуем отправить пустой пакет для проверки соединения
-        ByteBuffer buffer = ByteBuffer.allocate(1024);
-        datagramChannel.send(buffer, serverAddress);
+        datagramChannel.connect(serverAddress);   // Подключаем канал к адресу сервера
 
     } catch (IOException exception) {
         outputManager.printerr("Не удалось подключиться к серверу");
     }
 }
     public DatagramChannel getChannel(){
-        return datagramChannel;
+        return this.datagramChannel;
     }
 
     public InetSocketAddress newIP() throws InvalidInputException {
