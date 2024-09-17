@@ -1,0 +1,21 @@
+add
+solaaaaa
+2
+3
+4
+1
+
+
+
+
+help
+update 3
+asol
+3
+4
+5
+2
+
+
+
+execute_script Script3.txt
