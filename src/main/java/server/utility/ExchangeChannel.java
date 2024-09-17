@@ -25,7 +25,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ForkJoinPool;
 
-public class ExchangeChannel {
+public class ExchangeChannel implements Runnable{
 
     private InetSocketAddress target;
     private DatagramChannel channel;
@@ -41,32 +41,29 @@ public class ExchangeChannel {
 
     public ExchangeChannel(ServerConnector connector) {
         this.connector = connector;
-        try{
-            connector.connect();
-        } catch (IOException e) {
-        }
     }
 
-
-     public void start() {
-    // Создаем серверный сокет один раз
-    try (DatagramSocket serverSocket = new DatagramSocket()) {
+@Override
+     public void run() {
+    try {
+        connector.connect();
+        selector = connector.getSelector();
         while (true) {
-            selector = connector.getSelector();
-            // Ожидаем, пока есть доступные ключи для селектора
             selector.selectNow();
             Set<SelectionKey> selectedKeys = selector.selectedKeys();
             Iterator<SelectionKey> iterator = selectedKeys.iterator();
+
             while (iterator.hasNext()) {
                 SelectionKey key = iterator.next();
                 iterator.remove();
+
                 if (key.isReadable()) {
-                    byte[] bufferData = new byte[4000];
-                    DatagramPacket packet = new DatagramPacket(bufferData, bufferData.length);
-                    serverSocket.receive(packet);
+                    DatagramChannel datagramChannel = (DatagramChannel) key.channel();
+                    ByteBuffer buffer = ByteBuffer.allocate(4000);
+                    InetSocketAddress clientAddress = (InetSocketAddress) datagramChannel.receive(buffer);
                     new Thread(() -> {
                         try {
-                            handleRead(serverSocket);
+                            handleRead(datagramChannel);
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
@@ -75,10 +72,11 @@ public class ExchangeChannel {
             }
         }
     } catch (IOException e) {
-        throw new RuntimeException("Ошибка в работе сокета", e);
+        throw new RuntimeException("ERROR PANIC ERROR", e);
     }
 }
-//public boolean sendMessage(DatagramSocket clientChannel, Message message) {
+
+//public boolean sendMessage(DatagramChannel clientChannel, Message message) {
 //        sendThreadPool.execute(() -> {
 //            ByteBuffer buffer = ByteBuffer.wrap(MessageSerializer.serialize(message));
 //            try {
@@ -93,25 +91,27 @@ public class ExchangeChannel {
 //    }
 //}
 
-    private void handleRead(DatagramSocket serverSocket) throws IOException {
-    byte[] bufferData = new byte[4000];
-    DatagramPacket packet = new DatagramPacket(bufferData, bufferData.length);
+   private void handleRead(DatagramChannel channel) throws IOException {
+    ByteBuffer buffer = ByteBuffer.allocate(4000);
 
-    serverSocket.receive(packet);
+    InetSocketAddress clientAddress = (InetSocketAddress) channel.receive(buffer);
 
-    ByteBuffer buffer = ByteBuffer.wrap(packet.getData(), 0, packet.getLength());
-    readThreadPool.execute(() -> {
-        Message message = extractMessage(buffer);
-        if (message != null) {
-            processPool.execute(() -> {
-                try {
-                    processMessage(message);
-                } catch (InvalidInputException e) {
-                } catch (IOException e) {
-                }
-            });
-        }
-    });
+    if (clientAddress != null) {
+        buffer.flip();  // ЧИТАТЬ О НЕТ
+
+        readThreadPool.execute(() -> {
+            Message message = extractMessage(buffer);
+            if (message != null) {
+                processPool.execute(() -> {
+                    try {
+                        processMessage(message);
+                    } catch (InvalidInputException | IOException e) {
+                        e.printStackTrace();
+                    }
+                });
+            }
+        });
+    }
 }
     private Message extractMessage(ByteBuffer buffer) {
         try {

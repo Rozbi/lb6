@@ -6,9 +6,12 @@ import server.exeptions.InvalidInputException;
 import lib.managers.OutputManager;
 
 import javax.sound.sampled.Port;
+import javax.xml.crypto.Data;
 import java.io.IOException;
 import java.net.*;
+import java.nio.ByteBuffer;
 import java.nio.channels.DatagramChannel;
+import java.nio.channels.SocketChannel;
 
 public class UdpClient {
     private DatagramSocket datagramSocket;
@@ -16,31 +19,34 @@ public class UdpClient {
     private OutputManager outputManager;
     byte[] buffer;
     private final PortGetter portGetter;
+    private DatagramChannel datagramChannel;
 
     public UdpClient(InputManager inputManager, PortGetter portGetter, OutputManager outputManager) throws IOException {
         this.inputManager = inputManager;
         this.portGetter = portGetter;
         this.outputManager = outputManager;
+
     }
 
+public void connect() {
+    try {
+        // Создаем DatagramChannel и открываем его
+        datagramChannel = DatagramChannel.open();
+        datagramChannel.configureBlocking(false); // Устанавливаем неблокирующий режим
 
-    public boolean isConnected() {
-        return datagramSocket.isConnected();
-    }
+        // Получаем адрес сервера
+        InetSocketAddress serverAddress = new InetSocketAddress("127.0.0.1", portGetter.getServerPort());
 
-    public void connect() throws SocketException {
-        if (datagramSocket != null) {
-            datagramSocket.close();
-        }
-        try {
-            datagramSocket = new DatagramSocket(portGetter.getClientPort());
-            datagramSocket.setSoTimeout(500000);
-        } catch (IOException e) {
-            outputManager.printerr("Не удалось подключиться к хосту!");
-        }
+        // Пробуем отправить пустой пакет для проверки соединения
+        ByteBuffer buffer = ByteBuffer.allocate(1024);
+        datagramChannel.send(buffer, serverAddress);
+
+    } catch (IOException exception) {
+        outputManager.printerr("Не удалось подключиться к серверу");
     }
-    public DatagramSocket getSocket(){
-        return this.datagramSocket;
+}
+    public DatagramChannel getChannel(){
+        return datagramChannel;
     }
 
     public InetSocketAddress newIP() throws InvalidInputException {

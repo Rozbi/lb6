@@ -41,7 +41,8 @@ public class Main {
         CommandManager commandManager = new CommandManager(collectionManager, serverSendingManager, userManager, sqlManager, comparator);
         Runner runner = new Runner(collectionManager, commandManager, serverReceivingManager, serverSendingManager, serverConnector, inputManager, outputManager);
         exchangeChannel.setCommandManager(commandManager); // Передача CommandManager в ExchangeChannel
-        exchangeChannel.start();
+        Thread serverThread = new Thread(exchangeChannel);
+        serverThread.run();
         runner.letsGo();
     }
 

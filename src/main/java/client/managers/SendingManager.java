@@ -30,7 +30,7 @@ public class SendingManager {
     public void sendMessage(Message message) throws InvalidInputException {
         ByteBuffer buffer = ByteBuffer.wrap(jsonManager.gson.toJson(message).getBytes());
         try {
-            udpClient.getSocket().send(new DatagramPacket(buffer.array(), buffer.array().length, host));
+            udpClient.getChannel().send(buffer, host);
         } catch (Exception e) {
             outputManager.printerr("Ошибка отправки");
         }
