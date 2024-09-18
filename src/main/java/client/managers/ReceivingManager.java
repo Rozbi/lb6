@@ -6,9 +6,11 @@ import lib.utility.Message;
 import java.io.*;
 import java.net.DatagramPacket;
 import java.net.InetSocketAddress;
+import java.net.PortUnreachableException;
 import java.net.SocketTimeoutException;
 import java.nio.ByteBuffer;
 import java.util.concurrent.TimeUnit;
+import org.apache.commons.lang3.SerializationUtils;
 
 public class ReceivingManager {
     private final UdpClient udpClient;
@@ -21,38 +23,34 @@ public class ReceivingManager {
         this.outputManager = outputManager;
     }
 
-    public Message receive() throws IOException, SocketTimeoutException {
-
-    // Создаем буфер для получения данных
+   public Message receive() throws IOException, SocketTimeoutException {
     ByteBuffer buffer = ByteBuffer.allocate(4096);
-
-    // Переводим канал в неблокирующий режим и пытаемся получить пакет
     InetSocketAddress senderAddress = null;
+
     while (senderAddress == null) {
         try {
-            TimeUnit.MILLISECONDS.sleep(100); // Ждем немного, если данных пока нет
+            TimeUnit.MILLISECONDS.sleep(100);
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
+        try {
+            senderAddress = (InetSocketAddress) udpClient.getChannel().receive(buffer);
+        }catch(PortUnreachableException e){
 
-        // Пытаемся прочитать данные из канала
-        senderAddress = (InetSocketAddress) udpClient.getChannel().receive(buffer);
+        }
     }
 
-    // Переключаем буфер в режим чтения
-    buffer.flip();
+    buffer.flip(); // Переключаем в режим чтения.
 
-    // Преобразуем данные из буфера в массив байтов для десериализации
-    byte[] data = new byte[buffer.remaining()];
+    int bytesRead = buffer.remaining();
+    if (bytesRead <= 0) {
+        throw new IOException("No data received");
+    }
+
+    byte[] data = new byte[bytesRead];
     buffer.get(data);
+    Message message = SerializationUtils.deserialize(buffer.array());
 
-    try (ByteArrayInputStream byteStream = new ByteArrayInputStream(data);
-         ObjectInputStream objectStream = new ObjectInputStream(byteStream)) {
-
-        // Десериализуем объект
-        return (Message) objectStream.readObject();
-    } catch (ClassNotFoundException e) {
-        throw new RuntimeException("Deserialization error", e);
-    }
+    return message;
 }
 }

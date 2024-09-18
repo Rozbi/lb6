@@ -44,6 +44,7 @@ public class ServerReceivingManager {
     byte[] data = new byte[bytesRead];
     buffer.get(data);
     Message message = SerializationUtils.deserialize(buffer.array());
+    message.setAddress(senderAddress);
 
     return message;
 }

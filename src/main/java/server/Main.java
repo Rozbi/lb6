@@ -27,7 +27,7 @@ public class Main {
         InetSocketAddress inetSocketAddress = new InetSocketAddress("localhost", portGetter.getServerPort());
         ServerConnector serverConnector = new ServerConnector(inetSocketAddress);
         exchangeChannel = new ExchangeChannel(serverConnector);
-        ServerSendingManager serverSendingManager = new ServerSendingManager(serverConnector);
+        ServerSendingManager serverSendingManager = new ServerSendingManager(serverConnector, portGetter);
         JsonManager jsonManager = new JsonManager();
         SpaceMarineComparator comparator = new SpaceMarineComparator();
         PriorityQueue<SpaceMarine> priora = new PriorityQueue(comparator);
@@ -43,8 +43,8 @@ public class Main {
         CommandManager commandManager = new CommandManager(collectionManager, serverSendingManager, userManager, sqlManager, comparator);
         Runner runner = new Runner(collectionManager, commandManager, serverReceivingManager, serverSendingManager, serverConnector, inputManager, outputManager);
         exchangeChannel.setCommandManager(commandManager); // Передача CommandManager в ExchangeChannel
-//        Thread serverThread = new Thread(exchangeChannel);
-//        serverThread.run();
+        Thread serverThread = new Thread(exchangeChannel);
+        //serverThread.run();
         runner.letsGo();
     }
 }

@@ -37,7 +37,6 @@ public class ExchangeChannel implements Runnable{
 
     // Пул потоков для многопоточной обработки запросов
     private final ForkJoinPool processPool = new ForkJoinPool();
-    private final ExecutorService sendThreadPool = Executors.newFixedThreadPool(10);
 
     public ExchangeChannel(ServerConnector connector) {
         this.connector = connector;
@@ -89,7 +88,8 @@ public class ExchangeChannel implements Runnable{
 //        });
 //        return true; // Возвращаем true, чтобы указать, что задача отправки добавлена в пул потоков
 //    }
-//}
+
+
 
    private void handleRead(DatagramChannel channel) throws IOException {
     ByteBuffer buffer = ByteBuffer.allocate(4000);
