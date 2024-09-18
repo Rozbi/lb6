@@ -24,14 +24,10 @@ public class ServerConnector {
             if (channel != null) {
                 channel.close();
             }
-//            try {
                 this.channel = DatagramChannel.open();
                 channel.configureBlocking(false);
                 channel.bind(host);
                 channel.register(selector, SelectionKey.OP_READ);
-//            } catch (UnknownHostException | IllegalArgumentException e) {
-//
-//            }
         }
         public InetSocketAddress getHost() {
             return this.host;

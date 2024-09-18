@@ -33,6 +33,6 @@ public class SendingManager {
 
     public void sendMessage(Message message) throws InvalidInputException, IOException {
         ByteBuffer buffer = ByteBuffer.wrap(SerializationUtils.serialize(message));
-        udpClient.getChannel().write(buffer);
+        udpClient.getChannel().send(buffer, host);
     }
 }

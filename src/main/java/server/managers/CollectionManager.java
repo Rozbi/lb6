@@ -2,14 +2,14 @@ package server.managers;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.concurrent.PriorityBlockingQueue;
 
 import lib.spaceMarine.SpaceMarine;
 import server.exeptions.InvalidInputException;
-import server.managers.JsonManager;
 
 /**менеджер для работы с коллекцией*/
 public class CollectionManager {
-    private PriorityQueue<SpaceMarine> collection = new PriorityQueue<>();
+    private PriorityBlockingQueue<SpaceMarine> collection = new PriorityBlockingQueue<>();
     private LocalDateTime lastInitTime;
     private LocalDateTime lastSaveTime;
     private SQLManager sqlManager;
@@ -19,7 +19,7 @@ public class CollectionManager {
         collection.addAll(sqlManager.select());
     }
 
-    public void setCollection(PriorityQueue<SpaceMarine> collection) {
+    public void setCollection(PriorityBlockingQueue<SpaceMarine> collection) {
         this.collection = collection;
     }
     /**добавление элемента в коллекцию*/
@@ -54,7 +54,7 @@ public class CollectionManager {
     public void clear(){
         collection.clear();
     }
-    public PriorityQueue<SpaceMarine> getCollection(){
+    public PriorityBlockingQueue<SpaceMarine> getCollection(){
         return collection;
     }
 

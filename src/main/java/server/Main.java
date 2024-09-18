@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.channels.DatagramChannel;
 import java.util.*;
+import java.util.concurrent.PriorityBlockingQueue;
 
 public class Main {
     static ExchangeChannel exchangeChannel;
@@ -30,7 +31,7 @@ public class Main {
         ServerSendingManager serverSendingManager = new ServerSendingManager(serverConnector, portGetter);
         JsonManager jsonManager = new JsonManager();
         SpaceMarineComparator comparator = new SpaceMarineComparator();
-        PriorityQueue<SpaceMarine> priora = new PriorityQueue(comparator);
+        PriorityBlockingQueue<SpaceMarine> priora = new PriorityBlockingQueue(15, comparator);
         SQLconnector sqlconnector = new SQLconnector();
         SQLManager sqlManager = new SQLManager(sqlconnector);
         CollectionManager collectionManager = new CollectionManager(sqlManager);

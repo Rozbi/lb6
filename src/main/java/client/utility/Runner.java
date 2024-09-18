@@ -89,6 +89,10 @@ public class Runner implements Runnable {
                                         }
                                         break;
                                     }
+                                    case "register", "login": {
+                                        outputManager.print("вы уже вошли\n");
+                                        break;
+                                    }
                                     case "exit": {
                                         Message message = new Message(letsGoName, user);
                                         sendingManager.sendMessage(message);

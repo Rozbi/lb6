@@ -8,6 +8,7 @@ import java.sql.*;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.PriorityQueue;
+import java.util.concurrent.PriorityBlockingQueue;
 
 import static javax.management.remote.JMXConnectorFactory.connect;
 
@@ -19,7 +20,7 @@ public class SQLManager {
     }
 
     //createSpaceMarine
-    public void createSpaceMarine(PriorityQueue<SpaceMarine> collection, User user) {
+    public void createSpaceMarine(PriorityBlockingQueue<SpaceMarine> collection, User user) {
         try (Connection connection = sqlconnector.getConnectToSQL()) {
             String selectSQL = "SELECT COUNT(*) FROM spacemarine WHERE USER_NAME=? AND NAME=?" ;
             PreparedStatement preparedStatement = connection.prepareStatement("INSERT INTO spacemarine (USER_NAME, NAME, COORDINATE_X, COORDINATE_Y, CREATION_DATE, HEALTH, HEART_COUNT, CATEGORY, MELEE_WEAPON, CHAPTER_NAME, CHAPTER_WORLD) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");

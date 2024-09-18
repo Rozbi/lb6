@@ -12,6 +12,8 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Scanner;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**класс для вызова команд*/
 public class Runner implements Runnable {
@@ -22,6 +24,8 @@ public class Runner implements Runnable {
     private final ServerSendingManager serverSendingManager;
     private final ServerConnector serverConnector;
     private final OutputManager outputManager;
+
+    private final ExecutorService processThreadPool = Executors.newFixedThreadPool(3);
 
 
 
@@ -40,7 +44,7 @@ public class Runner implements Runnable {
      **/
     @Override
     public void letsGo() throws InvalidInputException, IOException {
-        Thread  thread= new Thread(() -> {
+        new Thread(() -> {
             String input = null;
             try {
                 input = inputManager.read();
@@ -61,25 +65,41 @@ public class Runner implements Runnable {
                     outputManager.printerr("Такой команды не существует\n");
                 }
         });
-        thread.start();
 
         commandManager.addCommands();
         serverConnector.connect();
 
         while (true) {
             try {
-
-                Message clientMessage = serverReceivingManager.receive();
-                String commandName = clientMessage.getName();
-                Command command = commandManager.getCommandMap().get(commandName);
-
-                collectionManager.history(command.getName());
-                command.execute(clientMessage);
-
-            } catch (IOException e) {
-                Message serverMessage = new Message("Error, ошибка выполнения сервером", "Код:1");
-                serverSendingManager.sendMessage(serverMessage);
+                serverReceivingManager.receive(this);
+            } catch (IOException | InterruptedException e) {
+                sendErrorMessage();
             }
+        }
+    }
+
+    public void processMessage(Message clientMessage) {
+        processThreadPool.execute(() -> {
+            String commandName = clientMessage.getName();
+            Command command = commandManager.getCommandMap().get(commandName);
+
+            collectionManager.history(command.getName());
+            try {
+                command.execute(clientMessage);
+            } catch (IOException | InvalidInputException e) {
+                sendErrorMessage();
+            }
+        });
+    }
+
+    private void sendErrorMessage() {
+        Message serverMessage = new Message("Error, ошибка выполнения сервером", "Код:1");
+        try {
+            serverSendingManager.sendMessage(serverMessage);
+        } catch (InvalidInputException e) {
+            throw new RuntimeException(e);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 

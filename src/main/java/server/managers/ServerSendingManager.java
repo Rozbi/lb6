@@ -30,7 +30,7 @@ public class ServerSendingManager {
     }
 
     public void sendMessage(Message message) throws InvalidInputException, IOException {
-        sendThreadPool.submit(() -> {
+        sendThreadPool.execute(() -> {
             ByteBuffer buffer = ByteBuffer.wrap(SerializationUtils.serialize(message));
             try {
                 serverConnector.getChannel().send(buffer, message.getAddress());

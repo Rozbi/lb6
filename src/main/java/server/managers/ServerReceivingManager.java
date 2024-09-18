@@ -7,12 +7,16 @@ import java.net.*;
 import java.nio.ByteBuffer;
 import java.nio.channels.DatagramChannel;
 import java.util.Arrays;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import org.apache.commons.lang3.SerializationUtils;
+import server.utility.Runner;
 
 public class ServerReceivingManager {
     private final ServerConnector serverConnector;
     private ServerSendingManager serverSendingManager;
+
 
     public ServerReceivingManager(ServerConnector serverConnector, ServerSendingManager serverSendingManager) {
         this.serverConnector = serverConnector;
@@ -20,32 +24,29 @@ public class ServerReceivingManager {
 
     }
 
-    public Message receive() throws IOException, SocketTimeoutException {
-    ByteBuffer buffer = ByteBuffer.allocate(4096);
-    InetSocketAddress senderAddress = null;
+    public void receive(Runner runner) throws IOException, SocketTimeoutException, InterruptedException {
+        for (; ;) {
+            try {
+                ByteBuffer buffer = ByteBuffer.allocate(4096);
+                InetSocketAddress senderAddress = (InetSocketAddress) serverConnector.getChannel().receive(buffer);
+                if (senderAddress != null) {
+                    new Thread(() -> {
+                    buffer.flip(); // Переключаем в режим чтения.
+                    int bytesRead = buffer.remaining();
 
-    while (senderAddress == null) {
-        try {
-            TimeUnit.MILLISECONDS.sleep(100);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
+                    byte[] data = new byte[bytesRead];
+                    buffer.get(data);
+                    Message message = SerializationUtils.deserialize(buffer.array());
+                    message.setAddress(senderAddress);
+                    runner.processMessage(message);
+                    }).start();
+                }
+            } catch (Exception e) {
+                Thread.sleep(3000);
+                serverConnector.getChannel().close();
+                serverConnector.connect();
+            }
         }
-
-        senderAddress = (InetSocketAddress) serverConnector.getChannel().receive(buffer);
-    }
-
-    buffer.flip(); // Переключаем в режим чтения.
-
-    int bytesRead = buffer.remaining();
-    if (bytesRead <= 0) {
-        throw new IOException("No data received");
-    }
-
-    byte[] data = new byte[bytesRead];
-    buffer.get(data);
-    Message message = SerializationUtils.deserialize(buffer.array());
-    message.setAddress(senderAddress);
-
-    return message;
+        }
 }
-}
+
