@@ -10,6 +10,7 @@ import server.managers.UserManager;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.concurrent.PriorityBlockingQueue;
 
 public class Update extends Command {
     private static String name;
@@ -45,7 +46,7 @@ public class Update extends Command {
                 Long idArgument = Long.parseLong(sm[0]);
                 try {
                     SpaceMarine element = new SpaceMarine(message.getUser().getLogin(), sm[1], new Coordinates(Long.parseLong(sm[2]), Float.parseFloat(sm[3])), LocalDateTime.now(), Long.parseLong(sm[4]), Integer.parseInt(sm[5]), sm[6].equals("null") ? null : AstartesCategory.valueOf(sm[6]), sm[7].equals("null") ? null : MeleeWeapon.valueOf(sm[7]), new Chapter(sm[8], sm[9]));
-                    sqlManager.updateSpaceMarine(element, idArgument);
+                    sqlManager.updateSpaceMarine(element, idArgument, message.getUser());
                     for (var spaceMarine : collectionManager.getCollection()) {
                         if ((spaceMarine.getId()) == idArgument) {
                             spaceMarine.setName(element.getName());
@@ -64,7 +65,7 @@ public class Update extends Command {
                     }
                 } catch (IndexOutOfBoundsException e) {
                     SpaceMarine element = new SpaceMarine(message.getUser().getLogin(), sm[1], new Coordinates(Long.parseLong(sm[2]), Float.parseFloat(sm[3])), LocalDateTime.now(), Long.parseLong(sm[4]), Integer.parseInt(sm[5]), sm[6].equals("null") ? null : AstartesCategory.valueOf(sm[6]), sm[7].equals("null") ? null : MeleeWeapon.valueOf(sm[7]), null);
-                    sqlManager.updateSpaceMarine(element, idArgument);
+                    sqlManager.updateSpaceMarine(element, idArgument, message.getUser());
                     for (var spaceMarine : collectionManager.getCollection()) {
                         if ((spaceMarine.getId()) == idArgument) {
                             spaceMarine.setName(element.getName());
@@ -75,6 +76,9 @@ public class Update extends Command {
                             spaceMarine.setChapter(element.getChapter());
                             spaceMarine.setCreationDate(element.getCreationDate());
                             spaceMarine.setCategory(element.getCategory());
+                            PriorityBlockingQueue<SpaceMarine> collection = new PriorityBlockingQueue<>();
+                            collection.addAll(sqlManager.select());
+                            collectionManager.setCollection(collection);
                             serverSendingManager.sendMessage(new Message(message.getName(), "Элемент обновлен", message.getAddress()));
                             collectionManager.setLastInitTime(LocalDateTime.now());
                             k = true;

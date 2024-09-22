@@ -13,6 +13,7 @@ import server.managers.UserManager;
 import java.io.IOException;
 import java.util.PriorityQueue;
 import java.util.stream.Collectors;
+import java.util.concurrent.*;
 
 public class RemoveLower extends Command {
     private static String name;
@@ -48,14 +49,17 @@ public class RemoveLower extends Command {
     public boolean execute(Message message) throws InvalidInputException, IOException {
         if (userManager.getUserId(message.getUser().getLogin(), userManager.hashPassword(message.getUser().getPassword())) != 0) {
             try {
+                PriorityBlockingQueue<SpaceMarine> collection = new PriorityBlockingQueue<>();
                 if (collectionManager.getCollection().isEmpty()) {
                     serverSendingManager.sendMessage(new Message(message.getName(), "коллекция пуста!", message.getAddress()));
                     return false;
                 }
                     for (var spaceMarine : collectionManager.getCollection()) {
                         if ((spaceMarine.getId()) < Long.parseLong(message.getEntity().toString())) {
-                            sqlManager.deleteSpaceMarine(spaceMarine.getId());
+                            sqlManager.deleteSpaceMarine(spaceMarine.getId(), message.getUser());
                             serverSendingManager.sendMessage(new Message(message.getName(), "Элементы удалены", message.getAddress()));
+                            collection.addAll(sqlManager.select());
+                            collectionManager.setCollection(collection);
                             return true;
                         } else {
                             serverSendingManager.sendMessage(new Message(message.getName(), "все id больше заданного", message.getAddress()));

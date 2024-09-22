@@ -44,7 +44,7 @@ public class Runner implements Runnable {
      **/
     @Override
     public void letsGo() throws InvalidInputException, IOException {
-        new Thread(() -> {
+        Thread  thread= new Thread(() -> {
             String input = null;
             try {
                 input = inputManager.read();
@@ -65,7 +65,7 @@ public class Runner implements Runnable {
                     outputManager.printerr("Такой команды не существует\n");
                 }
         });
-
+        thread.start();
         commandManager.addCommands();
         serverConnector.connect();
 

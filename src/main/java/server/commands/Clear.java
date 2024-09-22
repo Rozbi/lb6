@@ -1,5 +1,6 @@
 package server.commands;
 
+import lib.spaceMarine.SpaceMarine;
 import lib.utility.Message;
 import server.exeptions.InvalidInputException;
 import server.managers.CollectionManager;
@@ -8,6 +9,7 @@ import server.managers.ServerSendingManager;
 import server.managers.UserManager;
 
 import java.io.IOException;
+import java.util.concurrent.PriorityBlockingQueue;
 
 public class Clear extends Command {
     private static String name;
@@ -37,8 +39,10 @@ public class Clear extends Command {
     public boolean execute(Message message) throws InvalidInputException, IOException {
         if(userManager.getUserId(message.getUser().getLogin(), userManager.hashPassword(message.getUser().getPassword()))!=0) {
             try {
-                collectionManager.clear();
-                sqlManager.clearSpaceMarines();
+                sqlManager.clearSpaceMarines(message.getUser());
+                PriorityBlockingQueue<SpaceMarine> collection = new PriorityBlockingQueue<>();
+                collection.addAll(sqlManager.select());
+                collectionManager.setCollection(collection);
                 serverSendingManager.sendMessage(new Message(message.getName(), "Коллекция очищена ", message.getAddress()));
                 return true;
             } catch (Exception e) {

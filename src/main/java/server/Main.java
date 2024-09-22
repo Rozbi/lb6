@@ -10,6 +10,7 @@ import server.managers.*;
 import server.managers.JsonManager;
 import server.utility.SpaceMarineComparator;
 import server.utility.ExchangeChannel;
+import java.lang.*;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -19,7 +20,8 @@ import java.util.concurrent.PriorityBlockingQueue;
 
 public class Main {
     static ExchangeChannel exchangeChannel;
-    public static void main(String[] args) throws IOException, InterruptedException, InvalidInputException {
+
+        public static void main (String[]args) throws IOException, InterruptedException, InvalidInputException {
         byte[] buffer = new byte[300];
         PortGetter portGetter = new PortGetter();
         OutputManager outputManager = new OutputManager();
@@ -44,8 +46,14 @@ public class Main {
         CommandManager commandManager = new CommandManager(collectionManager, serverSendingManager, userManager, sqlManager, comparator);
         Runner runner = new Runner(collectionManager, commandManager, serverReceivingManager, serverSendingManager, serverConnector, inputManager, outputManager);
         exchangeChannel.setCommandManager(commandManager); // Передача CommandManager в ExchangeChannel
-        Thread serverThread = new Thread(exchangeChannel);
-        //serverThread.run();
         runner.letsGo();
-    }
+
+        Runtime runtime = Runtime.getRuntime();
+        runtime.addShutdownHook(new Thread() {
+            @Override
+            public void run() {
+                System.out.println("Давайте не будем так делать(");
+            }
+        });
 }
+    }

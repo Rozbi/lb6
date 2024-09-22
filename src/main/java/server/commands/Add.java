@@ -45,12 +45,16 @@ public class Add extends Command {
                 long id = 0;
                 try {
                     SpaceMarine spaceMarine = new SpaceMarine(message.getUser().getLogin(), sm[0], new Coordinates(Long.parseLong(sm[1]), Float.parseFloat(sm[2])), LocalDateTime.now(), Long.parseLong(sm[3]), Integer.parseInt(sm[4]), sm[5].equals("null") ? null : AstartesCategory.valueOf(sm[5]), sm[6].equals("null") ? null : MeleeWeapon.valueOf(sm[6]), new Chapter(sm[7], sm[8]));
+                    sqlManager.addSpaceMarine(spaceMarine, message.getUser());
+                    spaceMarine.setId(sqlManager.getSpaceMarineId(spaceMarine));
                     collectionManager.add(spaceMarine);
-                    sqlManager.createSpaceMarine(collectionManager.getCollection(), message.getUser());
+
+
                 } catch (IndexOutOfBoundsException e) {
                     SpaceMarine spaceMarine = new SpaceMarine(message.getUser().getLogin(), sm[0], new Coordinates(Long.parseLong(sm[1]), Float.parseFloat(sm[2])), LocalDateTime.now(), Long.parseLong(sm[3]), Integer.parseInt(sm[4]), sm[5].equals("null") ? null : AstartesCategory.valueOf(sm[5]), sm[6].equals("null") ? null : MeleeWeapon.valueOf(sm[6]), null);
+                    sqlManager.addSpaceMarine(spaceMarine, message.getUser());
+                    spaceMarine.setId(sqlManager.getSpaceMarineId(spaceMarine));
                     collectionManager.add(spaceMarine);
-                    sqlManager.createSpaceMarine(collectionManager.getCollection(), message.getUser());
                 }
                 serverSendingManager.sendMessage(new Message("add", "Элемент успешно добавлен в коллекцию", message.getAddress()));
                 return true;

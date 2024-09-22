@@ -1,11 +1,13 @@
 package server.commands;
 
+import lib.spaceMarine.SpaceMarine;
 import lib.utility.Message;
 import server.exeptions.InvalidInputException;
 import server.managers.CollectionManager;
 import server.managers.SQLManager;
 import server.managers.ServerSendingManager;
 import server.managers.UserManager;
+import java.util.concurrent.*;
 
 import java.io.IOException;
 
@@ -38,11 +40,13 @@ public class RemoveById extends Command {
     public boolean execute(Message message) throws InvalidInputException, IOException {
         if(userManager.getUserId(message.getUser().getLogin(), userManager.hashPassword(message.getUser().getPassword()))!=0) {
             try {
+                PriorityBlockingQueue<SpaceMarine> collection = new PriorityBlockingQueue<>();
                 for (var spaceMarine : collectionManager.getCollection()) {
                     if ((spaceMarine.getId()) == Long.parseLong(message.getEntity().toString())) {
-                        collectionManager.getCollection().remove(spaceMarine);
-                        sqlManager.deleteSpaceMarine(Long.parseLong(message.getEntity().toString()));
+                        sqlManager.deleteSpaceMarine(Long.parseLong(message.getEntity().toString()), message.getUser());
                         serverSendingManager.sendMessage(new Message(message.getName(), "Элемент удален", message.getAddress()));
+                        collection.addAll(sqlManager.select());
+                        collectionManager.setCollection(collection);
                         k = true;
                         return true;
                     }

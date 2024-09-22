@@ -21,15 +21,16 @@ public class Show extends Command {
     private UserManager userManager;
     private SQLManager sqlManager;
     private SpaceMarineComparator comparator;
+    private CollectionManager collectionManager;
 
-    public Show(String name, String description, ServerSendingManager serverSendingManager, UserManager userManager, SQLManager sqlManager, SpaceMarineComparator comparator) {
+    public Show(String name, String description, ServerSendingManager serverSendingManager, UserManager userManager, CollectionManager collectionManager, SpaceMarineComparator comparator) {
         super("show", "вывести в стандартный поток вывода все элементы коллекции в строковом представлении");
         this.name = name;
         this.description = description;
         this.comparator = comparator;
         this.serverSendingManager = serverSendingManager;
         this.userManager=userManager;
-        this.sqlManager = sqlManager;
+        this.collectionManager = collectionManager;
 
     }
 
@@ -47,7 +48,7 @@ public class Show extends Command {
     public boolean execute(Message message) throws InvalidInputException, IOException {
         if(userManager.getUserId(message.getUser().getLogin(), userManager.hashPassword(message.getUser().getPassword()))!=0) {
             try {
-                List<SpaceMarine> sortedSpaceMarines = sqlManager.select().stream()
+                List<SpaceMarine> sortedSpaceMarines = collectionManager.getCollection().stream()
     .   sorted(new SpaceMarineComparator())
     .   collect(Collectors.toList());
                 serverSendingManager.sendMessage(new Message(message.getName(), sortedSpaceMarines.toString(), message.getAddress()));

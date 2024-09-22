@@ -40,7 +40,7 @@ public class CommandManager {
         commandMap.put("remove_by_id", new RemoveById("remove_by_id {id}", "удалить элемент из коллекции по его id", collectionManager, serverSendingManager, userManager, sqlManager));
         commandMap.put("remove_lower", new RemoveLower("remove_lower {id}", "удалить из коллекции элементы меньшиe чем заданный", collectionManager, serverSendingManager, userManager, sqlManager));
         commandMap.put("exit", new Exit("exit", "завершить программу", serverSendingManager, collectionManager, sqlManager, userManager));
-        commandMap.put("show", new Show("show", "вывести содержимое коллекции", serverSendingManager, userManager, sqlManager, comparator));
+        commandMap.put("show", new Show("show", "вывести содержимое коллекции", serverSendingManager, userManager, collectionManager, comparator));
         commandMap.put("update", new Update("update {id}", "обновить значение элемента коллекции id которого равен заданному", collectionManager, serverSendingManager, userManager, sqlManager));
         commandMap.put("history", new History("history", "вывести последние 14 команд", collectionManager, serverSendingManager, userManager));
         commandMap.put("login", new Login("login", "Войти в систему", userManager, serverSendingManager));
